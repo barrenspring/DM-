@@ -16,16 +16,14 @@
 :root{--ey-black:#2e2e38;--ey-yellow:#ffe600;--ey-gray:#f3f3f5;--green:#2db84d;--red:#e0383e;--orange:#f5a623;--blue:#4a90d9;--purple:#8e6fd6;--border:#e3e3e8;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:"Microsoft YaHei","Segoe UI",sans-serif;background:var(--ey-gray);color:var(--ey-black);}
-header{background:var(--ey-black);color:#fff;padding:12px 24px;display:flex;align-items:center;gap:16px;}
-header .logo{background:var(--ey-yellow);color:var(--ey-black);font-weight:800;padding:4px 10px;border-radius:3px;font-size:18px;}
+header{background:var(--ey-black);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:14px;}
+header .logo{display:flex;align-items:center;}
 header h1{font-size:17px;font-weight:600;}
 header .sub{font-size:12px;color:#bdbdc7;}
 .toolbar{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;}
 .toolbar button{background:var(--ey-yellow);color:var(--ey-black);border:none;padding:8px 14px;border-radius:4px;font-weight:600;cursor:pointer;}
 .toolbar button.ghost{background:#4a4a55;color:#fff;}
 .toolbar button:hover{filter:brightness(.95);}
-.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;}
-.diag{font-size:12px;padding:6px 24px;background:#eef;color:#445;border-bottom:1px solid #dde;}
 .banner{padding:11px 24px;font-size:13px;display:none;}.banner.show{display:block;}
 .banner.err{background:#fdecec;color:#a01b22;}.banner.warn{background:#fff6e0;color:#8a5a00;}
 .banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;}
@@ -34,7 +32,7 @@ header .sub{font-size:12px;color:#bdbdc7;}
 .tabs button.active{color:var(--ey-black);border-bottom-color:var(--ey-yellow);}
 .wrap{padding:18px 24px;max-width:1500px;margin:0 auto;}
 .page{display:none;}.page.active{display:block;}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px;margin-bottom:18px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:13px;margin-bottom:18px;}
 .card{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid var(--ey-yellow);}
 .card .label{font-size:12px;color:#888;margin-bottom:6px;}
 .card .value{font-size:24px;font-weight:700;}.card .value.small{font-size:16px;}
@@ -45,9 +43,10 @@ header .sub{font-size:12px;color:#bdbdc7;}
 @media(max-width:980px){.charts{grid-template-columns:1fr;}}
 .chart-box{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .chart-box h3{font-size:14px;margin-bottom:10px;color:#555;}
-/* 关键：固定高度容器，杜绝图表无限拉伸 / 闪屏 */
+/* 固定高度容器，杜绝图表无限拉伸 / 闪屏 */
 .cc{position:relative;width:100%;height:300px;}
-.cc.sm{height:240px;}
+.cc.sm{height:250px;}
+.cc.tall{height:360px;}
 .panel{background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px;}
 .panel h3{font-size:14px;margin-bottom:12px;color:#555;}
 .alert{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;margin-bottom:7px;font-size:13px;}
@@ -71,21 +70,35 @@ tr:hover td{background:#fffbe6;}
 .filters select,.filters input{padding:8px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;background:#fff;}
 .empty{padding:70px;text-align:center;color:#999;}
 footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
+@media print{
+  .toolbar,.tabs,#banner,.filters,footer,.hint{display:none!important;}
+  header{background:#fff;color:#000;border-bottom:2px solid var(--ey-yellow);}
+  header .sub{color:#666;}
+  body{background:#fff;}
+  .page{display:none!important;}.page.active{display:block!important;}
+  .card,.chart-box,.panel,.table-box{box-shadow:none;border:1px solid #eee;}
+  @page{size:A4 landscape;margin:8mm;}
+}
 </style>
 </head>
 <body>
 <header>
-  <span class="logo">EY</span>
+  <span class="logo" title="EY">
+    <svg width="56" height="40" viewBox="0 0 118 80" xmlns="http://www.w3.org/2000/svg" aria-label="EY">
+      <text x="0" y="60" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="60" fill="#ffffff">EY</text>
+      <polygon points="118,2 72,28 118,28" fill="#ffe600"/>
+      <polygon points="118,33 62,55 118,55" fill="#ffe600"/>
+      <polygon points="118,60 52,80 118,80" fill="#ffe600"/>
+    </svg>
+  </span>
   <div><h1>Daily Management 看板</h1><div class="sub">底稿交付中心 · 进度 / 函证 / OS / 预算管控</div></div>
   <div class="toolbar">
-    <span><span class="status-dot"></span> <span id="autoText">未连接</span></span>
     <span id="lastUpdate" style="color:#bdbdc7"></span>
-    <button id="refreshBtn" class="ghost" style="display:none;">刷新</button>
     <button id="exportBtn" class="ghost" style="display:none;">⬇ 更新共享数据</button>
     <button id="pickBtn">选择 Excel 文件</button>
+    <button id="pdfBtn" class="ghost">导出 PDF</button>
   </div>
 </header>
-<div class="diag" id="diag">环境检测中…</div>
 <div class="banner" id="banner"></div>
 <input type="file" id="legacyInput" accept=".xlsx,.xlsm,.xls" style="display:none">
 
@@ -110,8 +123,8 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
     <div class="cards" id="ov-cards"></div>
     <div class="panel"><h3>⚠ 预警事项</h3><div id="ov-alerts"></div></div>
     <div class="charts">
-      <div class="chart-box"><h3>各项目底稿完成率</h3><div class="cc"><canvas id="c-proj"></canvas></div></div>
-      <div class="chart-box"><h3>预算 vs 实际工时（超支标红）</h3><div class="cc"><canvas id="c-budget"></canvas></div></div>
+      <div class="chart-box"><h3>各项目底稿完成情况（已完成 / 总数）</h3><div class="cc tall"><canvas id="c-proj"></canvas></div></div>
+      <div class="chart-box"><h3>预算 vs 实际工时（超支标红）</h3><div class="cc tall"><canvas id="c-budget"></canvas></div></div>
     </div>
   </div>
 
@@ -119,11 +132,16 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
   <div class="page" id="page-project">
     <div class="filters">
       <select id="pf-type"><option value="">全部类型</option></select>
+      <select id="pf-status"><option value="">全部状态</option></select>
       <input type="text" id="pf-kw" placeholder="搜索项目…">
       <span style="font-size:12px;color:#999;" id="pf-count"></span>
     </div>
+    <div class="charts">
+      <div class="chart-box"><h3>底稿进度（已完成 / 未完成）</h3><div class="cc tall"><canvas id="c-projwp"></canvas></div></div>
+      <div class="chart-box"><h3>预算使用率（%）</h3><div class="cc tall"><canvas id="c-projbud"></canvas></div></div>
+    </div>
     <div class="table-box"><table id="t-project"><thead></thead><tbody></tbody></table></div>
-    <p style="font-size:12px;color:#aaa;margin-top:8px;">说明：底稿进度按“已完成→FIC复核→EIC复核→首次交付→最终交付”流程展示各阶段已达数量 / 该项目底稿总数。</p>
+    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：底稿进度按“已完成→FIC复核→EIC复核→首次交付→最终交付”流程展示各阶段已达数量 / 该项目底稿总数。</p>
   </div>
 
   <!-- 员工维度 -->
@@ -135,11 +153,16 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
     <div class="cards" id="staff-cards"></div>
     <div class="chart-box" style="margin-bottom:18px;"><h3>各员工底稿：已完成 / 进行中 / 未开始</h3><div class="cc sm"><canvas id="c-staff"></canvas></div></div>
     <div class="table-box"><table id="t-staff"><thead></thead><tbody></tbody></table></div>
-    <p style="font-size:12px;color:#aaa;margin-top:8px;">说明：BKD 列为空视为“未开始”；已填 BKD 视为“已开始”；标记“是否完成=Y”视为“已完成”。</p>
+    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：BKD 列为空视为“未开始”；已填 BKD 视为“已开始”；标记“是否完成=Y”视为“已完成”。</p>
   </div>
 
   <!-- 函证 -->
   <div class="page" id="page-conf">
+    <div class="filters">
+      <input type="text" id="cf-kw" placeholder="搜索项目…">
+      <select id="cf-mode"><option value="">全部</option><option value="unback">仅未收回</option><option value="unsent">仅未发出</option></select>
+      <span style="font-size:12px;color:#999;" id="cf-count"></span>
+    </div>
     <div class="cards" id="conf-cards"></div>
     <div class="chart-box" style="margin-bottom:18px;"><h3>各项目函证：已收回 / 未收回</h3><div class="cc sm"><canvas id="c-conf"></canvas></div></div>
     <div class="table-box"><table id="t-conf"><thead></thead><tbody></tbody></table></div>
@@ -147,6 +170,12 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
   <!-- OS -->
   <div class="page" id="page-os">
+    <div class="filters">
+      <select id="of-proj"><option value="">全部项目</option></select>
+      <select id="of-cls"><option value="">全部分类</option></select>
+      <select id="of-status"><option value="">全部状态</option><option value="open">未解决</option><option value="solved">已解决</option></select>
+      <span style="font-size:12px;color:#999;" id="of-count"></span>
+    </div>
     <div class="cards" id="os-cards"></div>
     <div class="charts">
       <div class="chart-box"><h3>OS 按项目</h3><div class="cc sm"><canvas id="c-osproj"></canvas></div></div>
@@ -164,50 +193,38 @@ const hasFSA=('showOpenFilePicker'in window), isFile=(location.protocol==='file:
 let fileHandle=null,lastMod=0,autoTimer=null,DATA=null,charts={};
 const TODAY=new Date();
 
-/* ===== 诊断 + 查看者自动加载 data.js ===== */
+/* ===== 启动：查看者自动加载 data.js ===== */
 window.addEventListener('load',()=>{
-  const okX=typeof XLSX!=='undefined',okC=typeof Chart!=='undefined';
-  if(okC){Chart.defaults.animation=false;Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';}
-  $('diag').innerHTML=`打开方式：<b>${isFile?'本地双击(file://)':location.protocol+'//'}</b> ｜ Excel库：<b style="color:${okX?'#1d6b35':'#a01b22'}">${okX?'已加载✓':'未加载✗'}</b> ｜ 图表库：<b style="color:${okC?'#1d6b35':'#a01b22'}">${okC?'已加载✓':'未加载✗'}</b> ｜ 共享数据：<b id="diagData">检测中…</b>`;
-
-  // 查看者模式：若同目录存在 data.js（由维护者生成），自动加载，无需选文件
+  if(typeof Chart!=='undefined'){Chart.defaults.animation=false;Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';}
   loadSharedData();
 });
-
 function loadSharedData(){
-  // window.__DASHBOARD_DATA 由同目录 data.js 注入（顶部已用 <script src="data.js"> 静态加载）
   if(window.__DASHBOARD_DATA){
     DATA=window.__DASHBOARD_DATA.data;
     const gen=window.__DASHBOARD_DATA.generatedAt||'';
-    $('diagData')&&($('diagData').textContent='已加载✓');
     $('lastUpdate').textContent=gen?('数据更新于 '+gen):'';
-    $('autoText').textContent='查看共享数据';
     applyData(false);
     return;
   }
   noShared();
 }
 function noShared(){
-  $('diagData')&&($('diagData').textContent='无（维护者请生成）');
-  if(!okGlobalX()){banner('err','❌ <b>Excel解析库未加载</b>（公司网络可能屏蔽了外网，且本地缺少 xlsx.full.min.js）。请把 xlsx.full.min.js 与 chart.umd.min.js 放到本文件同目录。');}
+  if(typeof XLSX==='undefined'){banner('err','❌ <b>Excel解析库未加载</b>（公司网络可能屏蔽了外网，且本地缺少 xlsx.full.min.js）。请把 xlsx.full.min.js 与 chart.umd.min.js 放到本文件同目录。');}
   else if(isFile){banner('warn','ℹ️ 未发现共享数据 <code>data.js</code>。<br>· <b>查看者</b>：请等维护者把 data.js 放入本文件夹。<br>· <b>维护者</b>：点右上「选择 Excel 文件」→「⬇ 更新共享数据」生成 data.js 放入同文件夹即可。');}
 }
-function okGlobalX(){return typeof XLSX!=='undefined';}
 function banner(t,h){$('banner').className='banner show '+t;$('banner').innerHTML=h;}
 function hideBanner(){$('banner').className='banner';}
 
 /* ===== 文件读取（带降级）===== */
-$('pickBtn').onclick=pickFile; $('refreshBtn').onclick=refresh;
-$('legacyInput').onchange=async()=>{const f=$('legacyInput').files[0];if(!f)return;try{parse(await f.arrayBuffer());mark();after('manual');}catch(e){banner('err','❌ 读取失败：'+e.message);}};
+$('pickBtn').onclick=pickFile;
+$('pdfBtn').onclick=()=>window.print();
+$('legacyInput').onchange=async()=>{const f=$('legacyInput').files[0];if(!f)return;try{parse(await f.arrayBuffer());mark();after();}catch(e){banner('err','❌ 读取失败：'+e.message);}};
 async function pickFile(){
   hideBanner(); if(typeof XLSX==='undefined'){banner('err','❌ Excel解析库未加载，无法读取。');return;}
-  if(hasFSA&&!isFile){try{[fileHandle]=await window.showOpenFilePicker({types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx','.xlsm','.xls']}}]});await readHandle(true);auto();after('auto');return;}catch(e){if(e&&e.name==='AbortError')return;}}
+  if(hasFSA&&!isFile){try{[fileHandle]=await window.showOpenFilePicker({types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx','.xlsm','.xls']}}]});await readHandle(true);auto();after();return;}catch(e){if(e&&e.name==='AbortError')return;}}
   $('legacyInput').value='';$('legacyInput').click();
 }
-function after(m){$('refreshBtn').style.display='inline-block';
-  if(m==='auto'){$('refreshBtn').textContent='刷新';$('autoText').textContent='自动刷新中（每5秒）';}
-  else{$('refreshBtn').textContent='重新选择文件';$('autoText').textContent='已加载（双击模式，需手动重选刷新）';}}
-async function refresh(){if(fileHandle){try{await readHandle(true);}catch(e){banner('err','刷新失败：'+e.message);}}else{$('legacyInput').value='';$('legacyInput').click();}}
+function after(){$('exportBtn').style.display='inline-block';}
 function auto(){if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(async()=>{try{await readHandle(false);}catch(e){}},5000);}
 async function readHandle(force){const f=await fileHandle.getFile();if(!force&&f.lastModified===lastMod)return;lastMod=f.lastModified;parse(await f.arrayBuffer());mark();}
 function mark(){$('lastUpdate').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN');}
@@ -224,12 +241,11 @@ $('exportBtn').onclick=()=>{
   banner('warn','✅ 已生成 <code>data.js</code>（在你的下载文件夹）。请把它<b>覆盖到 OneDrive 看板所在的同一文件夹</b>，其他人打开 HTML 即可看到最新进度。');
 };
 
-/* ===== 解析 ===== */
+/* ===== 解析（按表头名称取值，Excel 增删字段不影响看板列示）===== */
 function findTable(aoa,marker){for(let i=0;i<aoa.length;i++){const t=aoa[i].map(x=>String(x==null?'':x).trim());if(marker(t))return{headers:t,rows:aoa.slice(i+1)};}return{headers:[],rows:[]};}
 const idxsOf=(h,n)=>h.map((x,i)=>x===n?i:-1).filter(i=>i>=0);
 function cellGetter(headers){return(row,name)=>{const ids=idxsOf(headers,name);for(const i of ids){if(row[i]!=null&&row[i]!=='')return row[i];}return ids.length?row[ids[0]]:'';};}
 const Y=v=>String(v).trim().toUpperCase()==='Y';
-const NA=v=>String(v).trim().toUpperCase()==='N/A';
 const has=v=>String(v).trim()!=='';
 const numv=v=>{const n=parseFloat(String(v).replace(/[%,¥, ]/g,''));return isNaN(n)?0:n;};
 const datev=v=>v instanceof Date?v:(v&&!isNaN(Date.parse(v))?new Date(v):null);
@@ -240,11 +256,11 @@ function parse(buf){
   if(!D)return;
   DATA=D; applyData(true);
 }
-
 function buildData(wb){
   const sheet=n=>wb.Sheets[n]?XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''}):[];
   const aoaKB=sheet('看板'),aoaBase=sheet('项目基础信息'),aoaDet=sheet('底稿进度'),aoaConf=sheet('银行函证进度'),aoaOS=sheet('OS list及缺失PBC');
   if(!aoaBase.length&&!aoaDet.length){banner('warn','⚠️ 没找到预期的工作表（项目基础信息/底稿进度）。请确认选对了文件。');return null;}
+  const ms=d=>{const x=datev(d);return x?x.getTime():null;};
 
   const KB=findTable(aoaKB,r=>r.includes('服务单号')&&r.includes('预算'));const gKB=cellGetter(KB.headers);
   const budgetBySn={};
@@ -253,7 +269,6 @@ function buildData(wb){
 
   const B=findTable(aoaBase,r=>r.includes('服务单号')&&r.includes('首次交付DDL'));const gB=cellGetter(B.headers);
   const projects={};const nameToSn={};
-  const ms=d=>{const x=datev(d);return x?x.getTime():null;};
   B.rows.forEach(r=>{const sn=String(gB(r,'服务单号')).trim();const nm=String(gB(r,'项目名称')).trim();
     if(!nm)return;const key=sn||nm;nameToSn[nm]=key;
     projects[key]={sn:key,name:nm,type:String(gB(r,'项目类型')).trim()||'未分类',
@@ -266,9 +281,8 @@ function buildData(wb){
   D.rows.forEach(r=>{const sn=String(gD(r,'WP服务单')).trim();const nm=String(gD(r,'项目')).trim();
     const entity=String(gD(r,'entity')).trim();if(!nm&&!entity)return;
     const key=projects[sn]?sn:(nameToSn[nm]||sn||nm);
-    const bkd=gD(r,'BKD');
     const rec={name:nm,owner:String(gD(r,'负责人')).trim()||'未分配',
-      started:has(bkd),done:Y(gD(r,'是否完成')),fic:Y(gD(r,'FIC复核')),eic:Y(gD(r,'EIC复核')),
+      started:has(gD(r,'BKD')),done:Y(gD(r,'是否完成')),fic:Y(gD(r,'FIC复核')),eic:Y(gD(r,'EIC复核')),
       deliv1:Y(gD(r,'首次交付')),deliv2:Y(gD(r,'最终交付')),os:String(gD(r,'OS事项')).trim()};
     let p=projects[key];if(!p){p=projects[key]={sn:key,name:nm,type:'未分类',ddl1:null,ddl2:null,budget:0,actual:0,wp:0,started:0,done:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,os:0};nameToSn[nm]=key;}
     p.wp++;if(rec.started)p.started++;if(rec.done)p.done++;if(rec.fic)p.fic_r++;if(rec.eic)p.eic_r++;
@@ -288,7 +302,7 @@ function buildData(wb){
     conf.push({sn,name:nm,gen:numv(gC(r,'合计生成')),sent:numv(gC(r,'已发出')),unsent:numv(gC(r,'未发出')),
       back:numv(gC(r,'已收回')),unback:numv(gC(r,'未收回')),owner:String(gC(r,'负责人')).trim(),note:String(gC(r,'备注')).trim()});});
   const confByName={};conf.forEach(c=>{const k=(c.name||'').replace(/[-—].*/,'').trim();
-    const t=confByName[k]||(confByName[k]={gen:0,back:0,unback:0});t.gen+=c.gen;t.back+=c.back;t.unback+=c.unback;});
+    const t=confByName[k]||(confByName[k]={gen:0,sent:0,unsent:0,back:0,unback:0});t.gen+=c.gen;t.sent+=c.sent;t.unsent+=c.unsent;t.back+=c.back;t.unback+=c.unback;});
 
   const O=findTable(aoaOS,r=>r.includes('OS事项')&&(r.includes('序号')||r.includes('事项分类')));const gO=cellGetter(O.headers);
   const oslist=[];
@@ -300,7 +314,6 @@ function buildData(wb){
 
   return {projects:Object.values(projects).filter(p=>p.name),staff:staffArr,conf,confByName,oslist};
 }
-
 function applyData(fromExcel){
   hideBanner();$('tabs').style.display='flex';$('emptyState').style.display='none';
   if(fromExcel)$('exportBtn').style.display='inline-block';
@@ -311,21 +324,27 @@ function applyData(fromExcel){
 const rate=(a,b)=>b?Math.round(a/b*100):0;
 const daysTo=d=>d?Math.ceil((d-TODAY)/86400000):null;
 const fmtMs=ms=>ms?new Date(ms).toLocaleDateString('zh-CN'):'';
+const cfKey=nm=>(nm||'').replace(/[-—].*/,'').trim();
+function deliveryBucket(p){
+  if(p.wp===0)return 'doing';
+  if(p.deliv2>=p.wp)return 'final';   // 整体交付
+  if(p.deliv1>=p.wp)return 'first';   // 首次交付（全部首交，但未全部最终交付）
+  return 'doing';                     // 进行中（含未开始）
+}
 function projStatus(p){
-  const r=rate(p.done,p.wp);
   if(p.wp===0||p.started===0)return{t:'未开始',c:'#999'};
-  if(r>=100)return{t:'已完成',c:'var(--green)'};
+  if(rate(p.done,p.wp)>=100)return{t:'已完成',c:'var(--green)'};
   const dd=daysTo(p.ddl1);
   if(dd!==null&&dd<0)return{t:'已逾期',c:'var(--red)'};
   if(dd!==null&&dd<=7)return{t:'临近DDL',c:'var(--orange)'};
   return{t:'进行中',c:'var(--blue)'};
 }
-function budgetFlag(p){
+function budgetAlert(p){ // 取最严重的一条
   if(p.budget<=0)return null;
   const remPct=(p.budget-p.actual)/p.budget*100;
-  const done=rate(p.done,p.wp);
-  if(p.actual>p.budget)return{lv:'crit',tag:'预算超支',msg:`超支 ${(p.actual-p.budget).toFixed(0)}h（预算${p.budget.toFixed(0)} / 实际${p.actual.toFixed(0)}）`};
-  if(remPct<30&&done<80)return{lv:'warn',tag:'预算预警',msg:`剩余预算仅 ${remPct.toFixed(0)}%，但进度 ${done}%`};
+  if(p.actual>p.budget)return{lv:'crit',tag:'超支',msg:`超 ${(p.actual-p.budget).toFixed(0)}h（预算${p.budget.toFixed(0)}/实际${p.actual.toFixed(0)}）`};
+  if(remPct<10&&p.deliv1<p.wp)return{lv:'crit',tag:'预算紧张',msg:`剩余预算仅 ${remPct.toFixed(0)}%，但尚未完成首次交付（${p.deliv1}/${p.wp}）`};
+  if(remPct<30&&rate(p.done,p.wp)<80)return{lv:'warn',tag:'预算预警',msg:`剩余预算 ${remPct.toFixed(0)}%，进度 ${rate(p.done,p.wp)}%`};
   return null;
 }
 
@@ -339,11 +358,10 @@ function showTab(t){currentTab=t;
   if(DATA)renderCharts(t);
 }
 
-/* ===== 渲染入口：表格/卡片立即渲染（便宜），图表只画当前页 ===== */
-function renderAll(){
-  renderOverviewCards();renderProject();renderStaff();renderConf();renderOS();
-}
+/* ===== 渲染入口 ===== */
+function renderAll(){renderOverviewCards();renderProject();renderStaff();renderConf();renderOS();}
 function kpi(arr,el){$(el).innerHTML=arr.map(c=>`<div class="card ${c.c||''}"><div class="label">${c.l}</div><div class="value ${c.s?'small':''}">${c.v}</div>${c.sub?`<div class="sub2">${c.sub}</div>`:''}</div>`).join('');}
+function fillSel(id,items){const s=$(id),cur=s.value;s.innerHTML=s.options[0].outerHTML+items.map(i=>`<option>${i}</option>`).join('');s.value=cur;}
 
 /* ----- 全览 ----- */
 function renderOverviewCards(){
@@ -353,12 +371,14 @@ function renderOverviewCards(){
   const over=P.filter(p=>p.budget>0&&p.actual>p.budget);
   const osOpen=DATA.oslist.filter(o=>!o.solved).length;
   const cBack=DATA.conf.reduce((s,c)=>s+c.back,0),cGen=DATA.conf.reduce((s,c)=>s+c.gen,0),cUn=DATA.conf.reduce((s,c)=>s+c.unback,0);
-  const doing=P.filter(p=>projStatus(p).t==='进行中'||projStatus(p).t==='临近DDL'||projStatus(p).t==='已逾期').length;
-  const finished=P.filter(p=>p.wp>0&&rate(p.done,p.wp)>=100).length;
+  const first=P.filter(p=>deliveryBucket(p)==='first').length;
+  const final=P.filter(p=>deliveryBucket(p)==='final').length;
+  const doing=P.length-first-final;
   kpi([
     {l:'项目总数',v:P.length},
     {l:'进行中',v:doing,c:'blue'},
-    {l:'已完成',v:finished,c:'green'},
+    {l:'首次交付',v:first,c:'orange'},
+    {l:'整体交付',v:final,c:'green'},
     {l:'底稿完成率',v:rate(done,wp)+'%',c:'blue',sub:`${done}/${wp} 张`},
     {l:'预算使用率',v:rate(act,bud)+'%',c:act>bud?'red':'green',sub:`${act.toFixed(0)}/${bud.toFixed(0)} h`},
     {l:'超支项目',v:over.length,c:over.length?'red':'green'},
@@ -366,32 +386,35 @@ function renderOverviewCards(){
     {l:'OS 未解决',v:osOpen,c:osOpen?'purple':'green'},
   ],'ov-cards');
 
-  // 预警（不展开 OS 具体内容，只汇总）
   const alerts=[];
-  P.forEach(p=>{const b=budgetFlag(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.tag,msg:b.msg});
+  P.forEach(p=>{const b=budgetAlert(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.tag,msg:b.msg});
     const st=projStatus(p);const dd=daysTo(p.ddl1);
-    if(st.t==='已逾期')alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首次交付DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
-    else if(st.t==='临近DDL')alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首次交付 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
+    if(st.t==='已逾期')alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首交DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
+    else if(st.t==='临近DDL')alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首交 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
   });
   const osByProj={};DATA.oslist.filter(o=>!o.solved).forEach(o=>osByProj[o.name]=(osByProj[o.name]||0)+1);
   Object.entries(osByProj).forEach(([nm,n])=>alerts.push({lv:'info',proj:nm,tag:'OS未解决',msg:`${n} 项待处理`}));
-  const unback={};DATA.conf.filter(c=>c.unback>0).forEach(c=>unback[c.name]=(unback[c.name]||0)+c.unback);
-  Object.entries(unback).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未收回',msg:`${n} 份未收回`}));
+  const unsent={},unback={};
+  DATA.conf.forEach(c=>{if(c.unsent>0)unsent[c.name]=(unsent[c.name]||0)+c.unsent;if(c.unback>0)unback[c.name]=(unback[c.name]||0)+c.unback;});
+  Object.entries(unsent).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未发',msg:`${n} 份未发出`}));
+  Object.entries(unback).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未收',msg:`${n} 份未收回`}));
   const order={crit:0,warn:1,info:2};alerts.sort((a,b)=>order[a.lv]-order[b.lv]);
   $('ov-alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.lv}"><span class="tag">${a.tag}</span><b>${a.proj}</b>&nbsp;—&nbsp;${a.msg}</div>`).join(''):'<div style="color:#999;padding:8px;">暂无预警 🎉</div>';
 }
 
 /* ----- 项目维度 ----- */
+let _projRows=[];
 function renderProject(){
   fillSel('pf-type',[...new Set(DATA.projects.map(p=>p.type).filter(Boolean))]);
-  ['pf-type','pf-kw'].forEach(id=>$(id).oninput=drawProjectTable);
+  fillSel('pf-status',[...new Set(DATA.projects.map(p=>projStatus(p).t))]);
+  ['pf-type','pf-status','pf-kw'].forEach(id=>$(id).oninput=drawProjectTable);
   drawProjectTable();
 }
-function fillSel(id,items){const s=$(id),cur=s.value;s.innerHTML=s.options[0].outerHTML+items.map(i=>`<option>${i}</option>`).join('');s.value=cur;}
 function drawProjectTable(){
-  const tp=$('pf-type').value,kw=$('pf-kw').value.trim();
-  let rows=DATA.projects.filter(p=>(!tp||p.type===tp)&&(!kw||p.name.includes(kw)));
+  const tp=$('pf-type').value,st=$('pf-status').value,kw=$('pf-kw').value.trim();
+  let rows=DATA.projects.filter(p=>(!tp||p.type===tp)&&(!st||projStatus(p).t===st)&&(!kw||p.name.includes(kw)));
   rows.sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
+  _projRows=rows;
   $('pf-count').textContent='共 '+rows.length+' 个项目';
   const thead=`<tr>
     <th rowspan="2">项目</th><th rowspan="2">类型</th><th rowspan="2">状态</th>
@@ -405,14 +428,14 @@ function drawProjectTable(){
   $('t-project').querySelector('thead').innerHTML=thead;
   const f=(a,b)=>`<span class="frac">${a}/${b}</span>`;
   $('t-project').querySelector('tbody').innerHTML=rows.map(p=>{
-    const st=projStatus(p);
+    const stt=projStatus(p);
     const use=p.budget>0?rate(p.actual,p.budget):null;
     const useTxt=use===null?'—':`<span class="${p.actual>p.budget?'over':(use>=70?'':'under')}">${use}%</span>`;
-    const cf=DATA.confByName[p.name.replace(/[-—].*/,'').trim()];
+    const cf=DATA.confByName[cfKey(p.name)];
     const cfTxt=cf?`${cf.back}/${cf.gen}${cf.unback>0?' <span class=over>(欠'+cf.unback+')</span>':''}`:'—';
     return `<tr>
       <td><b>${p.name}</b></td><td>${p.type}</td>
-      <td><span class="pill" style="background:${st.c}">${st.t}</span></td>
+      <td><span class="pill" style="background:${stt.c}">${stt.t}</span></td>
       <td class="cell-c">${p.budget?p.budget.toFixed(0):'—'}</td>
       <td class="cell-c">${p.budget?(p.actual>p.budget?'<span class=over>'+p.actual.toFixed(0)+'</span>':p.actual.toFixed(0)):'—'}</td>
       <td class="cell-c">${useTxt}</td>
@@ -424,6 +447,18 @@ function drawProjectTable(){
       <td class="cell-c">${f(p.deliv2,p.wp)}</td>
       <td class="cell-c">${p.os?'<span class=over>'+p.os+'</span>':0}</td>
     </tr>`;}).join('');
+  if(currentTab==='project')drawProjectCharts();
+}
+function drawProjectCharts(){
+  const rows=_projRows;if(!rows.length){destroy('c-projwp');destroy('c-projbud');return;}
+  bar('c-projwp',{labels:rows.map(p=>p.name),datasets:[
+    {label:'已完成',data:rows.map(p=>p.done),backgroundColor:'#2db84d',stack:'a'},
+    {label:'未完成',data:rows.map(p=>p.wp-p.done),backgroundColor:'#e3e3e8',stack:'a'}]},
+    {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}});
+  const bp=rows.filter(p=>p.budget>0);
+  bar('c-projbud',{labels:bp.map(p=>p.name),datasets:[{label:'使用率%',data:bp.map(p=>rate(p.actual,p.budget)),
+    backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':(rate(p.actual,p.budget)>=90?'#f5a623':'#4a90d9'))}]},
+    {indexAxis:'y',plugins:{legend:{display:false}}});
 }
 
 /* ----- 员工维度 ----- */
@@ -451,24 +486,53 @@ function renderStaff(){
 
 /* ----- 函证 ----- */
 function renderConf(){
-  const C=DATA.conf;
-  const gen=C.reduce((s,x)=>s+x.gen,0),sent=C.reduce((s,x)=>s+x.sent,0),back=C.reduce((s,x)=>s+x.back,0),unback=C.reduce((s,x)=>s+x.unback,0);
-  kpi([{l:'合计生成',v:gen},{l:'已发出',v:sent,c:'blue'},{l:'已收回',v:back,c:'green'},
-    {l:'未收回',v:unback,c:unback?'red':'green'},{l:'回收率',v:rate(back,gen)+'%',c:'blue'}],'conf-cards');
+  ['cf-kw','cf-mode'].forEach(id=>$(id).oninput=drawConf);
+  drawConf();
+}
+let _confRows=[];
+function drawConf(){
+  const kw=$('cf-kw').value.trim(),mode=$('cf-mode').value;
+  let C=DATA.conf.filter(x=>(!kw||(x.name||'').includes(kw))&&(mode!=='unback'||x.unback>0)&&(mode!=='unsent'||x.unsent>0));
+  _confRows=C;
+  const all=DATA.conf;
+  const gen=all.reduce((s,x)=>s+x.gen,0),sent=all.reduce((s,x)=>s+x.sent,0),back=all.reduce((s,x)=>s+x.back,0),unback=all.reduce((s,x)=>s+x.unback,0),unsent=all.reduce((s,x)=>s+x.unsent,0);
+  kpi([{l:'合计生成',v:gen},{l:'已发出',v:sent,c:'blue'},{l:'未发出',v:unsent,c:unsent?'red':'green'},
+    {l:'已收回',v:back,c:'green'},{l:'未收回',v:unback,c:unback?'red':'green'},{l:'回收率',v:rate(back,gen)+'%',c:'blue'}],'conf-cards');
+  $('cf-count').textContent='共 '+C.length+' 行';
   const H=['项目','合计生成','已发出','未发出','已收回','未收回','回收率','负责人','备注'];
   $('t-conf').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-conf').querySelector('tbody').innerHTML=C.map(x=>{const r=rate(x.back,x.gen);
-    return `<tr><td><b>${x.name||x.sn}</b></td><td>${x.gen}</td><td>${x.sent}</td><td>${x.unsent}</td>
+    return `<tr><td><b>${x.name||x.sn}</b></td><td>${x.gen}</td><td>${x.sent}</td>
+      <td>${x.unsent?'<span class=over>'+x.unsent+'</span>':0}</td>
       <td>${x.back}</td><td>${x.unback?'<span class=over>'+x.unback+'</span>':0}</td>
       <td>${r}%</td><td>${x.owner}</td><td style="white-space:normal;max-width:260px">${x.note||''}</td></tr>`;}).join('');
+  if(currentTab==='conf')drawConfChart();
+}
+function drawConfChart(){
+  const C=_confRows.length?_confRows:DATA.conf;
+  bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
+    {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
+    {label:'未收回',data:C.map(x=>x.unback),backgroundColor:'#e0383e',stack:'a'}]},
+    {scales:{x:{stacked:true},y:{stacked:true}}});
 }
 
 /* ----- OS ----- */
 function renderOS(){
-  const O=DATA.oslist;const open=O.filter(o=>!o.solved).length;
-  kpi([{l:'OS 总数',v:O.length},{l:'未解决',v:open,c:open?'red':'green'},
-    {l:'已解决',v:O.length-open,c:'green'},
-    {l:'涉及项目',v:new Set(O.map(o=>o.name)).size,c:'purple'}],'os-cards');
+  fillSel('of-proj',[...new Set(DATA.oslist.map(o=>o.name).filter(Boolean))]);
+  fillSel('of-cls',[...new Set(DATA.oslist.map(o=>o.cls).filter(Boolean))]);
+  ['of-proj','of-cls','of-status'].forEach(id=>$(id).oninput=drawOS);
+  drawOS();
+}
+let _osRows=[];
+function drawOS(){
+  const pj=$('of-proj').value,cl=$('of-cls').value,stt=$('of-status').value;
+  let O=DATA.oslist.filter(o=>(!pj||o.name===pj)&&(!cl||o.cls===cl)&&(stt!=='open'||!o.solved)&&(stt!=='solved'||o.solved));
+  _osRows=O;
+  const all=DATA.oslist;const open=all.filter(o=>!o.solved).length;
+  kpi([{l:'OS 总数',v:all.length},{l:'未解决',v:open,c:open?'red':'green'},
+    {l:'已解决',v:all.length-open,c:'green'},
+    {l:'涉及项目',v:new Set(all.map(o=>o.name)).size,c:'purple'}],'os-cards');
+  $('of-count').textContent='共 '+O.length+' 项';
   const H=['项目','Entity','科目','OS事项','分类','提出时间','负责人','是否解决','备注'];
   $('t-os').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-os').querySelector('tbody').innerHTML=O.map(o=>`<tr>
@@ -478,6 +542,14 @@ function renderOS(){
     <td>${fmtMs(o.raise)}</td><td>${o.owner}</td>
     <td>${o.solved?'<span class=under>已解决</span>':'<span class=over>未解决</span>'}</td>
     <td style="white-space:normal;max-width:220px">${o.note||''}</td></tr>`).join('');
+  if(currentTab==='os')drawOSCharts();
+}
+function drawOSCharts(){
+  const O=_osRows.length?_osRows:DATA.oslist;const open=O.filter(o=>!o.solved).length;
+  const byProj={};O.forEach(o=>byProj[o.name]=(byProj[o.name]||0)+1);
+  bar('c-osproj',{labels:Object.keys(byProj),datasets:[{label:'OS数',data:Object.values(byProj),backgroundColor:'#8e6fd6'}]},
+    {indexAxis:'y',plugins:{legend:{display:false}}});
+  pie('c-osstat',['已解决','未解决'],[O.length-open,open],['#2db84d','#e0383e']);
 }
 
 /* ===== 图表（只画当前可见页）===== */
@@ -485,40 +557,34 @@ function renderCharts(tab){
   if(typeof Chart==='undefined'||!DATA)return;
   if(tab==='overview'){
     const named=DATA.projects.filter(p=>p.wp>0).sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
-    bar('c-proj',{labels:named.map(p=>p.name),datasets:[{label:'完成率%',data:named.map(p=>rate(p.done,p.wp)),
-      backgroundColor:named.map(p=>{const r=rate(p.done,p.wp);return r>=100?'#2db84d':r>=70?'#4a90d9':'#f5a623';})}]},
-      {indexAxis:'y',scales:{x:{max:100}},plugins:{legend:{display:false}}});
+    bar('c-proj',{labels:named.map(p=>`${p.name}（${p.done}/${p.wp}）`),datasets:[
+      {label:'已完成',data:named.map(p=>p.done),backgroundColor:'#2db84d',stack:'a'},
+      {label:'未完成',data:named.map(p=>p.wp-p.done),backgroundColor:'#e3e3e8',stack:'a'}]},
+      {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}},
+       plugins:{tooltip:{callbacks:{afterlabel:c=>{const p=named[c.dataIndex];return '完成率 '+rate(p.done,p.wp)+'%';}}}}});
     const bp=DATA.projects.filter(p=>p.budget>0);
     bar('c-budget',{labels:bp.map(p=>p.name),datasets:[
       {label:'预算',data:bp.map(p=>p.budget),backgroundColor:'#cfcfd6'},
       {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#ffe600')}]},
       {indexAxis:'y'});
-  }else if(tab==='staff'){
+  }else if(tab==='project'){drawProjectCharts();}
+  else if(tab==='staff'){
     const sel=$('sf-name').value;let S=DATA.staff.slice().sort((a,b)=>b.wp-a.wp);if(sel)S=S.filter(s=>s.owner===sel);
     bar('c-staff',{labels:S.map(s=>s.owner),datasets:[
       {label:'已完成',data:S.map(s=>s.done),backgroundColor:'#2db84d',stack:'a'},
       {label:'进行中',data:S.map(s=>s.started-s.done),backgroundColor:'#4a90d9',stack:'a'},
       {label:'未开始',data:S.map(s=>s.wp-s.started),backgroundColor:'#e3e3e8',stack:'a'}]},
       {scales:{x:{stacked:true},y:{stacked:true}}});
-  }else if(tab==='conf'){
-    const C=DATA.conf;
-    bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
-      {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
-      {label:'未收回',data:C.map(x=>x.unback),backgroundColor:'#e0383e',stack:'a'}]},
-      {scales:{x:{stacked:true},y:{stacked:true}}});
-  }else if(tab==='os'){
-    const O=DATA.oslist;const open=O.filter(o=>!o.solved).length;
-    const byProj={};O.forEach(o=>byProj[o.name]=(byProj[o.name]||0)+1);
-    bar('c-osproj',{labels:Object.keys(byProj),datasets:[{label:'OS数',data:Object.values(byProj),backgroundColor:'#8e6fd6'}]},
-      {indexAxis:'y',plugins:{legend:{display:false}}});
-    pie('c-osstat',['已解决','未解决'],[O.length-open,open],['#2db84d','#e0383e']);
-  }
+  }else if(tab==='conf'){drawConfChart();}
+  else if(tab==='os'){drawOSCharts();}
 }
 
-/* ===== Chart 封装：固定容器高度 + 关闭动画 + 关闭自动resize抖动 ===== */
+/* ===== Chart 封装：固定容器高度 + 关闭动画 + 限制柱宽 ===== */
 function destroy(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,resizeDelay:120,plugins:{legend:{position:'bottom'}}};
-function bar(id,data,opts){destroy(id);charts[id]=new Chart($(id),{type:'bar',data,options:Object.assign({},baseOpts,opts)});}
+function bar(id,data,opts){destroy(id);
+  (data.datasets||[]).forEach(ds=>{if(ds.maxBarThickness==null)ds.maxBarThickness=40;});
+  charts[id]=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.7,barPercentage:0.85},baseOpts,opts)});}
 function pie(id,labels,data,colors){destroy(id);charts[id]=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});}
 </script>
 </body>
