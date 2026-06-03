@@ -70,13 +70,21 @@ tr:hover td{background:#fffbe6;}
 .filters select,.filters input{padding:8px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;background:#fff;}
 .empty{padding:70px;text-align:center;color:#999;}
 footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
+.print-title{display:none;}
+/* 导出全部时，屏幕上临时把所有页都铺开（用于让图表 canvas 拿到尺寸后再打印）*/
+body.print-prep .page{display:block!important;}
 @media print{
   .toolbar,.tabs,#banner,.filters,footer,.hint{display:none!important;}
   header{background:#fff;color:#000;border-bottom:2px solid var(--ey-yellow);}
   header .sub{color:#666;}
   body{background:#fff;}
+  /* 默认（仅打印当前页）*/
   .page{display:none!important;}.page.active{display:block!important;}
-  .card,.chart-box,.panel,.table-box{box-shadow:none;border:1px solid #eee;}
+  /* 一次性导出全部 5 个维度 */
+  body.print-prep .page{display:block!important;page-break-before:always;}
+  body.print-prep .page:first-child{page-break-before:avoid;}
+  body.print-prep .print-title{display:block;font-size:18px;font-weight:700;margin:0 0 12px;padding-bottom:6px;border-bottom:2px solid var(--ey-yellow);}
+  .card,.chart-box,.panel,.table-box{box-shadow:none;border:1px solid #eee;break-inside:avoid;}
   @page{size:A4 landscape;margin:8mm;}
 }
 </style>
@@ -120,6 +128,7 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
   <!-- 全览 -->
   <div class="page" id="page-overview">
+    <div class="print-title">全览</div>
     <div class="cards" id="ov-cards"></div>
     <div class="panel"><h3>⚠ 预警事项</h3><div id="ov-alerts"></div></div>
     <div class="charts">
@@ -130,6 +139,7 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
   <!-- 项目维度 -->
   <div class="page" id="page-project">
+    <div class="print-title">项目维度</div>
     <div class="filters">
       <select id="pf-type"><option value="">全部类型</option></select>
       <select id="pf-status"><option value="">全部状态</option></select>
@@ -146,6 +156,7 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
   <!-- 员工维度 -->
   <div class="page" id="page-staff">
+    <div class="print-title">员工维度</div>
     <div class="filters">
       <select id="sf-name"><option value="">全部员工</option></select>
       <span style="font-size:12px;color:#999;" id="sf-count"></span>
@@ -158,6 +169,7 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
   <!-- 函证 -->
   <div class="page" id="page-conf">
+    <div class="print-title">函证进度</div>
     <div class="filters">
       <input type="text" id="cf-kw" placeholder="搜索项目…">
       <select id="cf-mode"><option value="">全部</option><option value="unback">仅未收回</option><option value="unsent">仅未发出</option></select>
@@ -170,6 +182,7 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
   <!-- OS -->
   <div class="page" id="page-os">
+    <div class="print-title">OS 进度</div>
     <div class="filters">
       <select id="of-proj"><option value="">全部项目</option></select>
       <select id="of-cls"><option value="">全部分类</option></select>
@@ -217,7 +230,22 @@ function hideBanner(){$('banner').className='banner';}
 
 /* ===== 文件读取（带降级）===== */
 $('pickBtn').onclick=pickFile;
-$('pdfBtn').onclick=()=>window.print();
+$('pdfBtn').onclick=exportAllPDF;
+function exportAllPDF(){
+  if(!DATA){window.print();return;}
+  const tabs=['overview','project','staff','conf','os'];
+  // 1) 让所有页都可见，使每个 canvas 拿到真实尺寸
+  document.body.classList.add('print-prep');
+  // 2) 渲染每个维度的图表
+  tabs.forEach(t=>renderCharts(t));
+  // 3) 等图表绘制完成后打印，结束后恢复
+  setTimeout(()=>{
+    window.print();
+    document.body.classList.remove('print-prep');
+    // 恢复为只显示当前页 + 重绘当前页图表，避免隐藏页里残留尺寸异常
+    renderCharts(currentTab);
+  },400);
+}
 $('legacyInput').onchange=async()=>{const f=$('legacyInput').files[0];if(!f)return;try{parse(await f.arrayBuffer());mark();after();}catch(e){banner('err','❌ 读取失败：'+e.message);}};
 async function pickFile(){
   hideBanner(); if(typeof XLSX==='undefined'){banner('err','❌ Excel解析库未加载，无法读取。');return;}
