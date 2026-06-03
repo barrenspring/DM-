@@ -18,59 +18,59 @@ header .sub{font-size:12px;color:#bdbdc7;}
 .toolbar button{background:var(--ey-yellow);color:var(--ey-black);border:none;padding:8px 14px;border-radius:4px;font-weight:600;cursor:pointer;}
 .toolbar button.ghost{background:#4a4a55;color:#fff;}
 .toolbar button:hover{filter:brightness(.95);}
-.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 1.6s infinite;}
-@keyframes pulse{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;}
 .diag{font-size:12px;padding:6px 24px;background:#eef;color:#445;border-bottom:1px solid #dde;}
 .banner{padding:11px 24px;font-size:13px;display:none;}.banner.show{display:block;}
 .banner.err{background:#fdecec;color:#a01b22;}.banner.warn{background:#fff6e0;color:#8a5a00;}
 .banner code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;}
-/* tabs */
 .tabs{display:flex;gap:2px;background:#fff;padding:0 24px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;}
-.tabs button{background:none;border:none;padding:14px 20px;font-size:14px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;}
+.tabs button{background:none;border:none;padding:13px 20px;font-size:14px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;}
 .tabs button.active{color:var(--ey-black);border-bottom-color:var(--ey-yellow);}
-.wrap{padding:18px 24px;max-width:1600px;margin:0 auto;}
+.wrap{padding:18px 24px;max-width:1500px;margin:0 auto;}
 .page{display:none;}.page.active{display:block;}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:13px;margin-bottom:18px;}
-.card{background:#fff;border-radius:8px;padding:15px 17px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid var(--ey-yellow);}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:13px;margin-bottom:18px;}
+.card{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid var(--ey-yellow);}
 .card .label{font-size:12px;color:#888;margin-bottom:6px;}
-.card .value{font-size:25px;font-weight:700;}.card .value.small{font-size:17px;}
+.card .value{font-size:24px;font-weight:700;}.card .value.small{font-size:16px;}
 .card .sub2{font-size:11px;color:#aaa;margin-top:3px;}
 .card.red{border-top-color:var(--red);}.card.green{border-top-color:var(--green);}
 .card.orange{border-top-color:var(--orange);}.card.blue{border-top-color:var(--blue);}.card.purple{border-top-color:var(--purple);}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
-.charts.three{grid-template-columns:1fr 1fr 1fr;}
-.chart-box{background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.chart-box h3{font-size:14px;margin-bottom:12px;color:#555;}
-.chart-box.full{grid-column:1/-1;}
-@media(max-width:1100px){.charts,.charts.three{grid-template-columns:1fr;}}
+@media(max-width:980px){.charts{grid-template-columns:1fr;}}
+.chart-box{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.chart-box h3{font-size:14px;margin-bottom:10px;color:#555;}
+/* 关键：固定高度容器，杜绝图表无限拉伸 / 闪屏 */
+.cc{position:relative;width:100%;height:300px;}
+.cc.sm{height:240px;}
 .panel{background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px;}
 .panel h3{font-size:14px;margin-bottom:12px;color:#555;}
 .alert{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;margin-bottom:7px;font-size:13px;}
 .alert.crit{background:#fdecec;color:#a01b22;}.alert.warn{background:#fff6e0;color:#8a5a00;}.alert.info{background:#eef4fb;color:#2c5d8f;}
-.alert .tag{font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff;}
+.alert .tag{font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff;white-space:nowrap;}
 .alert.crit .tag{background:var(--red);}.alert.warn .tag{background:var(--orange);}.alert.info .tag{background:var(--blue);}
 .table-box{background:#fff;border-radius:8px;padding:6px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th,td{padding:9px 9px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
-th{background:#fafafa;color:#666;font-weight:600;position:sticky;top:49px;cursor:pointer;user-select:none;}
+th{background:#fafafa;color:#666;font-weight:600;}
+.group-th{text-align:center;background:#f0f0f3;border-left:1px solid var(--border);}
 tr:hover td{background:#fffbe6;}
 .pill{padding:3px 9px;border-radius:12px;font-size:12px;color:#fff;font-weight:600;}
-.progress{background:#eee;border-radius:10px;height:16px;width:110px;position:relative;overflow:hidden;display:inline-block;vertical-align:middle;}
+.progress{background:#eee;border-radius:10px;height:16px;width:96px;position:relative;overflow:hidden;display:inline-block;vertical-align:middle;}
 .progress>span{position:absolute;left:0;top:0;height:100%;border-radius:10px;}
 .progress>em{position:absolute;width:100%;text-align:center;font-style:normal;font-size:11px;line-height:16px;color:#333;}
+.frac{font-size:12px;color:#555;}
 .over{color:var(--red);font-weight:700;}.under{color:var(--green);font-weight:700;}
-.bar-mini{display:inline-block;height:8px;border-radius:4px;vertical-align:middle;}
+.cell-c{text-align:center;border-left:1px solid #f0f0f3;}
 .filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
 .filters select,.filters input{padding:8px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;background:#fff;}
 .empty{padding:70px;text-align:center;color:#999;}
 footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
-.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:4px;}
 </style>
 </head>
 <body>
 <header>
   <span class="logo">EY</span>
-  <div><h1>Daily Management 看板</h1><div class="sub">底稿交付中心 · 项目进度 / 函证 / OS / 预算管控</div></div>
+  <div><h1>Daily Management 看板</h1><div class="sub">底稿交付中心 · 进度 / 函证 / OS / 预算管控</div></div>
   <div class="toolbar">
     <span><span class="status-dot"></span> <span id="autoText">未连接</span></span>
     <span id="lastUpdate" style="color:#bdbdc7"></span>
@@ -92,57 +92,57 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
 <div class="wrap">
   <div id="emptyState" class="empty">
-    <p style="font-size:15px;">👋 请点击右上角「选择 Excel 文件」，选中 <b>【测试】底稿分工及进度表-每日更新.xlsx</b></p>
-    <p style="font-size:13px;margin-top:8px;color:#bbb;">读取后自动生成多维度看板。每日更新 Excel 并保存后，点「刷新」（或 https 打开时自动刷新）。</p>
+    <p style="font-size:15px;">👋 请点击右上角「选择 Excel 文件」，选中 <b>底稿分工及进度表-每日更新.xlsx</b></p>
+    <p style="font-size:13px;margin-top:8px;color:#bbb;">读取后自动生成看板。改完 Excel 保存后点「刷新」（用 https 打开时自动刷新）。</p>
   </div>
 
   <!-- 全览 -->
   <div class="page" id="page-overview">
     <div class="cards" id="ov-cards"></div>
-    <div class="panel"><h3>⚠ 预警事项（超支 / 剩余预算不足且进度缓慢 / 临近DDL未完成 / OS未解决）</h3><div id="ov-alerts"></div></div>
+    <div class="panel"><h3>⚠ 预警事项</h3><div id="ov-alerts"></div></div>
     <div class="charts">
-      <div class="chart-box"><h3>各项目底稿完成率</h3><canvas id="c-proj" height="240"></canvas></div>
-      <div class="chart-box"><h3>预算 vs 实际工时（超支标红）</h3><canvas id="c-budget" height="240"></canvas></div>
+      <div class="chart-box"><h3>各项目底稿完成率</h3><div class="cc"><canvas id="c-proj"></canvas></div></div>
+      <div class="chart-box"><h3>预算 vs 实际工时（超支标红）</h3><div class="cc"><canvas id="c-budget"></canvas></div></div>
     </div>
-    <div class="charts three">
-      <div class="chart-box"><h3>四类程序整体完成情况</h3><canvas id="c-prog" height="220"></canvas></div>
-      <div class="chart-box"><h3>OS 事项分类分布</h3><canvas id="c-os" height="220"></canvas></div>
-      <div class="chart-box"><h3>项目类型分布</h3><canvas id="c-type" height="220"></canvas></div>
-    </div>
-    <div class="charts"><div class="chart-box full"><h3>底稿交付趋势（按 Pre DDL 计划量 vs 已完成量，累计）</h3><canvas id="c-burn" height="110"></canvas></div></div>
   </div>
 
   <!-- 项目维度 -->
   <div class="page" id="page-project">
     <div class="filters">
-      <select id="pf-fic"><option value="">全部 FIC</option></select>
-      <select id="pf-eic"><option value="">全部 EIC</option></select>
       <select id="pf-type"><option value="">全部类型</option></select>
       <input type="text" id="pf-kw" placeholder="搜索项目…">
       <span style="font-size:12px;color:#999;" id="pf-count"></span>
     </div>
     <div class="table-box"><table id="t-project"><thead></thead><tbody></tbody></table></div>
+    <p style="font-size:12px;color:#aaa;margin-top:8px;">说明：底稿进度按“已完成→FIC复核→EIC复核→首次交付→最终交付”流程展示各阶段已达数量 / 该项目底稿总数。</p>
   </div>
 
   <!-- 员工维度 -->
   <div class="page" id="page-staff">
+    <div class="filters">
+      <select id="sf-name"><option value="">全部员工</option></select>
+      <span style="font-size:12px;color:#999;" id="sf-count"></span>
+    </div>
     <div class="cards" id="staff-cards"></div>
-    <div class="charts"><div class="chart-box full"><h3>各负责人底稿量（已完成 / 未完成）</h3><canvas id="c-staff" height="150"></canvas></div></div>
+    <div class="chart-box" style="margin-bottom:18px;"><h3>各员工底稿：已完成 / 进行中 / 未开始</h3><div class="cc sm"><canvas id="c-staff"></canvas></div></div>
     <div class="table-box"><table id="t-staff"><thead></thead><tbody></tbody></table></div>
+    <p style="font-size:12px;color:#aaa;margin-top:8px;">说明：BKD 列为空视为“未开始”；已填 BKD 视为“已开始”；标记“是否完成=Y”视为“已完成”。</p>
   </div>
 
   <!-- 函证 -->
   <div class="page" id="page-conf">
     <div class="cards" id="conf-cards"></div>
-    <div class="charts"><div class="chart-box full"><h3>各项目函证：已发出 / 已收回 / 未收回</h3><canvas id="c-conf" height="150"></canvas></div></div>
+    <div class="chart-box" style="margin-bottom:18px;"><h3>各项目函证：已收回 / 未收回</h3><div class="cc sm"><canvas id="c-conf"></canvas></div></div>
     <div class="table-box"><table id="t-conf"><thead></thead><tbody></tbody></table></div>
   </div>
 
   <!-- OS -->
   <div class="page" id="page-os">
     <div class="cards" id="os-cards"></div>
-    <div class="charts"><div class="chart-box"><h3>OS 按项目</h3><canvas id="c-osproj" height="220"></canvas></div>
-      <div class="chart-box"><h3>OS 解决状态</h3><canvas id="c-osstat" height="220"></canvas></div></div>
+    <div class="charts">
+      <div class="chart-box"><h3>OS 按项目</h3><div class="cc sm"><canvas id="c-osproj"></canvas></div></div>
+      <div class="chart-box"><h3>OS 解决状态</h3><div class="cc sm"><canvas id="c-osstat"></canvas></div></div>
+    </div>
     <div class="table-box"><table id="t-os"><thead></thead><tbody></tbody></table></div>
   </div>
 </div>
@@ -158,9 +158,10 @@ const TODAY=new Date();
 /* ===== 诊断 ===== */
 window.addEventListener('load',()=>{
   const okX=typeof XLSX!=='undefined',okC=typeof Chart!=='undefined';
+  if(okC){Chart.defaults.animation=false;Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';}
   $('diag').innerHTML=`打开方式：<b>${isFile?'本地双击(file://)':location.protocol+'//'}</b> ｜ Excel库：<b style="color:${okX?'#1d6b35':'#a01b22'}">${okX?'已加载✓':'未加载✗'}</b> ｜ 图表库：<b style="color:${okC?'#1d6b35':'#a01b22'}">${okC?'已加载✓':'未加载✗'}</b> ｜ 自动刷新：<b>${(hasFSA&&!isFile)?'支持✓':'手动刷新'}</b>`;
   if(!okX)banner('err','❌ <b>Excel解析库未加载</b>（公司网络可能屏蔽了外网）。我可以帮你做一个把库内嵌的<b>离线版</b>，断网也能用。');
-  else if(isFile)banner('warn','⚠️ 本地双击打开，浏览器禁用了“自动刷新”。看板可正常用，改完Excel点右上角<b>「刷新」</b>即可。想全自动刷新可用 GitHub Pages(https) 打开。');
+  else if(isFile)banner('warn','⚠️ 本地双击打开，浏览器禁用了“自动刷新”。看板可正常用，改完Excel点右上角<b>「刷新」</b>即可。');
 });
 function banner(t,h){$('banner').className='banner show '+t;$('banner').innerHTML=h;}
 function hideBanner(){$('banner').className='banner';}
@@ -179,15 +180,13 @@ function auto(){if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(asyn
 async function readHandle(force){const f=await fileHandle.getFile();if(!force&&f.lastModified===lastMod)return;lastMod=f.lastModified;parse(await f.arrayBuffer());mark();}
 function mark(){$('lastUpdate').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN');}
 
-/* ===== 解析 6 个工作表 ===== */
-function findTable(aoa,marker){ // marker: function(rowArr)->bool 找表头行
-  for(let i=0;i<aoa.length;i++){const t=aoa[i].map(x=>String(x==null?'':x).trim());if(marker(t))return {headers:t,rows:aoa.slice(i+1)};}
-  return {headers:[],rows:[]};
-}
+/* ===== 解析 ===== */
+function findTable(aoa,marker){for(let i=0;i<aoa.length;i++){const t=aoa[i].map(x=>String(x==null?'':x).trim());if(marker(t))return{headers:t,rows:aoa.slice(i+1)};}return{headers:[],rows:[]};}
 const idxsOf=(h,n)=>h.map((x,i)=>x===n?i:-1).filter(i=>i>=0);
-function cellGetter(headers){return (row,name)=>{const ids=idxsOf(headers,name);for(const i of ids){if(row[i]!=null&&row[i]!=='')return row[i];}return ids.length?row[ids[0]]:'';};}
+function cellGetter(headers){return(row,name)=>{const ids=idxsOf(headers,name);for(const i of ids){if(row[i]!=null&&row[i]!=='')return row[i];}return ids.length?row[ids[0]]:'';};}
 const Y=v=>String(v).trim().toUpperCase()==='Y';
 const NA=v=>String(v).trim().toUpperCase()==='N/A';
+const has=v=>String(v).trim()!=='';
 const numv=v=>{const n=parseFloat(String(v).replace(/[%,¥, ]/g,''));return isNaN(n)?0:n;};
 const datev=v=>v instanceof Date?v:(v&&!isNaN(Date.parse(v))?new Date(v):null);
 
@@ -197,72 +196,61 @@ function parse(buf){
   const aoaKB=sheet('看板'),aoaBase=sheet('项目基础信息'),aoaDet=sheet('底稿进度'),aoaConf=sheet('银行函证进度'),aoaOS=sheet('OS list及缺失PBC');
   if(!aoaBase.length&&!aoaDet.length){banner('warn','⚠️ 没找到预期的工作表（项目基础信息/底稿进度）。请确认选对了文件。');return;}
 
-  // 看板（表头含“服务单号”和“预算”）
-  const KB=findTable(aoaKB,r=>r.includes('服务单号')&&r.includes('预算')); const gKB=cellGetter(KB.headers);
+  const KB=findTable(aoaKB,r=>r.includes('服务单号')&&r.includes('预算'));const gKB=cellGetter(KB.headers);
   const budgetBySn={};
   KB.rows.forEach(r=>{const sn=String(gKB(r,'服务单号')).trim();if(!sn||!/EDC/i.test(sn))return;
-    budgetBySn[sn]={budget:numv(gKB(r,'预算')),actual:numv(gKB(r,'实际')),remain:numv(gKB(r,'剩余'))};});
+    budgetBySn[sn]={budget:numv(gKB(r,'预算')),actual:numv(gKB(r,'实际'))};});
 
-  // 项目基础信息（主表）
-  const B=findTable(aoaBase,r=>r.includes('服务单号')&&r.includes('首次交付DDL')); const gB=cellGetter(B.headers);
-  const projects={}; const nameToSn={};
+  const B=findTable(aoaBase,r=>r.includes('服务单号')&&r.includes('首次交付DDL'));const gB=cellGetter(B.headers);
+  const projects={};const nameToSn={};
   B.rows.forEach(r=>{const sn=String(gB(r,'服务单号')).trim();const nm=String(gB(r,'项目名称')).trim();
-    if(!sn&&!nm)return; if(!/EDC/i.test(sn)&&!nm)return; const key=sn||nm; if(!nm)return;
-    nameToSn[nm]=key;
-    projects[key]={sn:key,name:nm,type:String(gB(r,'项目类型')).trim()||'未分类',section:String(gB(r,'section')).trim(),
-      ddl1:datev(gB(r,'首次交付DDL')),ddl2:datev(gB(r,'整体交付DDL')),report:datev(gB(r,'报告日')),
-      eic:String(gB(r,'项目组EIC')).trim(),fic:String(gB(r,'项目组FIC')).trim(),
-      budget:0,actual:0,remain:0,wp:0,done:0,self:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,
-      bkd:[0,0],tod:[0,0],cut:[0,0],oth:[0,0],os:0};
+    if(!nm)return;const key=sn||nm;nameToSn[nm]=key;
+    projects[key]={sn:key,name:nm,type:String(gB(r,'项目类型')).trim()||'未分类',
+      ddl1:datev(gB(r,'首次交付DDL')),ddl2:datev(gB(r,'整体交付DDL')),
+      budget:0,actual:0,wp:0,started:0,done:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,os:0};
   });
 
-  // 底稿进度明细
-  const D=findTable(aoaDet,r=>r.includes('WP服务单')||r.includes('entity')); const gD=cellGetter(D.headers);
-  const detail=[]; const staff={};
-  const prog=(p,col,v)=>{if(NA(v))return;p[col][1]++;if(Y(v))p[col][0]++;};
+  const D=findTable(aoaDet,r=>r.includes('WP服务单')||r.includes('entity'));const gD=cellGetter(D.headers);
+  const detail=[];const staff={};
   D.rows.forEach(r=>{const sn=String(gD(r,'WP服务单')).trim();const nm=String(gD(r,'项目')).trim();
-    if(!sn&&!nm)return; const key=projects[sn]?sn:(nameToSn[nm]||sn||nm); if(!nm&&!sn)return;
-    const rec={sn:key,name:nm,entity:String(gD(r,'entity')).trim(),section:String(gD(r,'section')).trim(),
-      owner:String(gD(r,'负责人')).trim()||'未分配',pre:datev(gD(r,'Pre DDL')),
-      bkd:gD(r,'BKD'),tod:gD(r,'TOD'),cut:gD(r,'cut off'),oth:gD(r,'其他程序'),
-      os:String(gD(r,'OS事项')).trim(),oscls:String(gD(r,'事项分类')).trim(),
-      self:Y(gD(r,'是否自查')),done:Y(gD(r,'是否完成')),fic:Y(gD(r,'FIC复核')),eic:Y(gD(r,'EIC复核')),
-      deliv1:Y(gD(r,'首次交付')),deliv2:Y(gD(r,'最终交付'))};
-    if(!rec.name&&!rec.entity)return;
+    const entity=String(gD(r,'entity')).trim();if(!nm&&!entity)return;
+    const key=projects[sn]?sn:(nameToSn[nm]||sn||nm);
+    const bkd=gD(r,'BKD');
+    const rec={name:nm,entity,owner:String(gD(r,'负责人')).trim()||'未分配',
+      started:has(bkd),done:Y(gD(r,'是否完成')),fic:Y(gD(r,'FIC复核')),eic:Y(gD(r,'EIC复核')),
+      deliv1:Y(gD(r,'首次交付')),deliv2:Y(gD(r,'最终交付')),
+      os:String(gD(r,'OS事项')).trim()};
     detail.push(rec);
-    let p=projects[key]; if(!p){p=projects[key]={sn:key,name:nm,type:'未分类',section:'',ddl1:null,ddl2:null,report:null,eic:'',fic:'',budget:0,actual:0,remain:0,wp:0,done:0,self:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,bkd:[0,0],tod:[0,0],cut:[0,0],oth:[0,0],os:0};nameToSn[nm]=key;}
-    p.wp++; if(rec.done)p.done++; if(rec.self)p.self++; if(rec.fic)p.fic_r++; if(rec.eic)p.eic_r++;
-    if(rec.deliv1)p.deliv1++; if(rec.deliv2)p.deliv2++;
-    prog(p,'bkd',rec.bkd);prog(p,'tod',rec.tod);prog(p,'cut',rec.cut);prog(p,'oth',rec.oth);
+    let p=projects[key];if(!p){p=projects[key]={sn:key,name:nm,type:'未分类',ddl1:null,ddl2:null,budget:0,actual:0,wp:0,started:0,done:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,os:0};nameToSn[nm]=key;}
+    p.wp++;if(rec.started)p.started++;if(rec.done)p.done++;if(rec.fic)p.fic_r++;if(rec.eic)p.eic_r++;
+    if(rec.deliv1)p.deliv1++;if(rec.deliv2)p.deliv2++;
     if(rec.os&&rec.os!=='无')p.os++;
-    const s=staff[rec.owner]||(staff[rec.owner]={owner:rec.owner,wp:0,done:0,self:0,fic:0,eic:0,os:0,projs:new Set()});
-    s.wp++; if(rec.done)s.done++; if(rec.self)s.self++; if(rec.fic)s.fic++; if(rec.eic)s.eic++;
-    if(rec.os&&rec.os!=='无')s.os++; if(rec.name)s.projs.add(rec.name);
+    const s=staff[rec.owner]||(staff[rec.owner]={owner:rec.owner,wp:0,started:0,done:0,fic:0,eic:0,os:0,projs:new Set()});
+    s.wp++;if(rec.started)s.started++;if(rec.done)s.done++;if(rec.fic)s.fic++;if(rec.eic)s.eic++;
+    if(rec.os&&rec.os!=='无')s.os++;if(rec.name)s.projs.add(rec.name);
   });
+  Object.values(projects).forEach(p=>{const b=budgetBySn[p.sn];if(b){p.budget=b.budget;p.actual=b.actual;}});
 
-  // 预算并入项目
-  Object.values(projects).forEach(p=>{const b=budgetBySn[p.sn];if(b){p.budget=b.budget;p.actual=b.actual;p.remain=b.remain;}});
-
-  // 函证
-  const C=findTable(aoaConf,r=>r.includes('服务单号')&&(r.includes('已收回')||r.includes('合计生成'))); const gC=cellGetter(C.headers);
+  const C=findTable(aoaConf,r=>r.includes('服务单号')&&(r.includes('已收回')||r.includes('合计生成')));const gC=cellGetter(C.headers);
   const conf=[];
   C.rows.forEach(r=>{const sn=String(gC(r,'服务单号')).trim();const nm=String(gC(r,'项目')).trim();
     if(!sn||!/EDC/i.test(sn))return;
     conf.push({sn,name:nm,gen:numv(gC(r,'合计生成')),sent:numv(gC(r,'已发出')),unsent:numv(gC(r,'未发出')),
       back:numv(gC(r,'已收回')),unback:numv(gC(r,'未收回')),owner:String(gC(r,'负责人')).trim(),note:String(gC(r,'备注')).trim()});});
+  const confByName={};conf.forEach(c=>{const k=(c.name||'').replace(/[-—].*/,'').trim();
+    const t=confByName[k]||(confByName[k]={gen:0,back:0,unback:0});t.gen+=c.gen;t.back+=c.back;t.unback+=c.unback;});
 
-  // OS list
-  const O=findTable(aoaOS,r=>r.includes('OS事项')&&(r.includes('序号')||r.includes('事项分类'))); const gO=cellGetter(O.headers);
+  const O=findTable(aoaOS,r=>r.includes('OS事项')&&(r.includes('序号')||r.includes('事项分类')));const gO=cellGetter(O.headers);
   const oslist=[];
   O.rows.forEach(r=>{const nm=String(gO(r,'项目')).trim();const item=String(gO(r,'OS事项')).trim();
-    if(!nm&&!item)return; if(!item)return;
+    if(!item)return;
     oslist.push({name:nm,entity:String(gO(r,'Entity')).trim(),subj:String(gO(r,'科目')).trim(),item,
       cls:String(gO(r,'事项分类')).trim()||'未分类',raise:datev(gO(r,'提出时间')),
       owner:String(gO(r,'CSDC负责人')).trim(),solved:Y(gO(r,'是否解决')),note:String(gO(r,'备注')).trim()});});
 
-  DATA={projects:Object.values(projects).filter(p=>p.name),staff:Object.values(staff),conf,oslist,detail};
-  hideBanner(); $('tabs').style.display='flex'; $('emptyState').style.display='none';
-  showTab(currentTab); renderAll();
+  DATA={projects:Object.values(projects).filter(p=>p.name),staff:Object.values(staff),conf,confByName,oslist};
+  hideBanner();$('tabs').style.display='flex';$('emptyState').style.display='none';
+  renderAll();showTab(currentTab);
 }
 
 /* ===== 计算辅助 ===== */
@@ -270,158 +258,139 @@ const rate=(a,b)=>b?Math.round(a/b*100):0;
 const daysTo=d=>d?Math.ceil((d-TODAY)/86400000):null;
 function projStatus(p){
   const r=rate(p.done,p.wp);
-  if(p.wp===0)return{t:'未开始',c:'#999'};
+  if(p.wp===0||p.started===0)return{t:'未开始',c:'#999'};
   if(r>=100)return{t:'已完成',c:'var(--green)'};
   const dd=daysTo(p.ddl1);
-  if(dd!==null&&dd<0&&r<100)return{t:'已逾期',c:'var(--red)'};
-  if(dd!==null&&dd<=7&&r<100)return{t:'临近DDL',c:'var(--orange)'};
+  if(dd!==null&&dd<0)return{t:'已逾期',c:'var(--red)'};
+  if(dd!==null&&dd<=7)return{t:'临近DDL',c:'var(--orange)'};
   return{t:'进行中',c:'var(--blue)'};
 }
-function budgetFlag(p){ // 返回预警等级
+function budgetFlag(p){
   if(p.budget<=0)return null;
   const remPct=(p.budget-p.actual)/p.budget*100;
   const done=rate(p.done,p.wp);
-  if(p.actual>p.budget)return{lv:'crit',msg:`预算超支 ${(p.actual-p.budget).toFixed(0)}h（预算${p.budget.toFixed(0)}/实际${p.actual.toFixed(0)}）`};
-  if(remPct<30&&done<80)return{lv:'warn',msg:`剩余预算${remPct.toFixed(0)}% 但进度仅${done}%`};
+  if(p.actual>p.budget)return{lv:'crit',tag:'预算超支',msg:`超支 ${(p.actual-p.budget).toFixed(0)}h（预算${p.budget.toFixed(0)} / 实际${p.actual.toFixed(0)}）`};
+  if(remPct<30&&done<80)return{lv:'warn',tag:'预算预警',msg:`剩余预算仅 ${remPct.toFixed(0)}%，但进度 ${done}%`};
   return null;
 }
 
-/* ===== Tab 切换 ===== */
+/* ===== Tab 切换：只渲染当前页图表，避免在隐藏页里渲染导致闪屏 ===== */
 let currentTab='overview';
 $('tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 function showTab(t){currentTab=t;
   $('tabs').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   $('page-'+t).classList.add('active');
+  if(DATA)renderCharts(t);
 }
 
-/* ===== 渲染入口 ===== */
-function renderAll(){renderOverview();initProjFilters();renderProject();renderStaff();renderConf();renderOS();}
-
+/* ===== 渲染入口：表格/卡片立即渲染（便宜），图表只画当前页 ===== */
+function renderAll(){
+  renderOverviewCards();renderProject();renderStaff();renderConf();renderOS();
+}
 function kpi(arr,el){$(el).innerHTML=arr.map(c=>`<div class="card ${c.c||''}"><div class="label">${c.l}</div><div class="value ${c.s?'small':''}">${c.v}</div>${c.sub?`<div class="sub2">${c.sub}</div>`:''}</div>`).join('');}
 
 /* ----- 全览 ----- */
-function renderOverview(){
+function renderOverviewCards(){
   const P=DATA.projects;
   const wp=P.reduce((s,p)=>s+p.wp,0),done=P.reduce((s,p)=>s+p.done,0);
   const bud=P.reduce((s,p)=>s+p.budget,0),act=P.reduce((s,p)=>s+p.actual,0);
   const over=P.filter(p=>p.budget>0&&p.actual>p.budget);
   const osOpen=DATA.oslist.filter(o=>!o.solved).length;
-  const cBack=DATA.conf.reduce((s,c)=>s+c.back,0),cGen=DATA.conf.reduce((s,c)=>s+c.gen,0);
+  const cBack=DATA.conf.reduce((s,c)=>s+c.back,0),cGen=DATA.conf.reduce((s,c)=>s+c.gen,0),cUn=DATA.conf.reduce((s,c)=>s+c.unback,0);
+  const doing=P.filter(p=>projStatus(p).t==='进行中'||projStatus(p).t==='临近DDL'||projStatus(p).t==='已逾期').length;
   const finished=P.filter(p=>p.wp>0&&rate(p.done,p.wp)>=100).length;
-  const lagging=P.filter(p=>{const s=projStatus(p);return s.t==='已逾期'||s.t==='临近DDL';}).length;
   kpi([
     {l:'项目总数',v:P.length},
-    {l:'已完成项目',v:finished,c:'green',sub:`进行中 ${P.filter(p=>{const s=projStatus(p);return s.t==='进行中';}).length}`},
-    {l:'滞后/临近DDL',v:lagging,c:'orange'},
+    {l:'进行中',v:doing,c:'blue'},
+    {l:'已完成',v:finished,c:'green'},
     {l:'底稿完成率',v:rate(done,wp)+'%',c:'blue',sub:`${done}/${wp} 张`},
     {l:'预算使用率',v:rate(act,bud)+'%',c:act>bud?'red':'green',sub:`${act.toFixed(0)}/${bud.toFixed(0)} h`},
-    {l:'超支项目',v:over.length,c:'red',s:over.length?0:1,sub:over.map(p=>p.name).join('、')||'无'},
-    {l:'OS 未解决',v:osOpen,c:'purple'},
-    {l:'函证回收率',v:rate(cBack,cGen)+'%',c:'blue',sub:`${cBack}/${cGen}`},
+    {l:'超支项目',v:over.length,c:over.length?'red':'green'},
+    {l:'函证未收回',v:cUn,c:cUn?'red':'green',sub:`回收率 ${rate(cBack,cGen)}%`},
+    {l:'OS 未解决',v:osOpen,c:osOpen?'purple':'green'},
   ],'ov-cards');
 
-  // 预警
+  // 预警（不展开 OS 具体内容，只汇总）
   const alerts=[];
-  P.forEach(p=>{const b=budgetFlag(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.lv==='crit'?'超支':'预算预警',msg:b.msg});
+  P.forEach(p=>{const b=budgetFlag(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.tag,msg:b.msg});
     const st=projStatus(p);const dd=daysTo(p.ddl1);
-    if(st.t==='已逾期')alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首次交付DDL已过 ${Math.abs(dd)} 天，完成率${rate(p.done,p.wp)}%`});
-    else if(st.t==='临近DDL')alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首次交付仅 ${dd} 天，完成率${rate(p.done,p.wp)}%`});
+    if(st.t==='已逾期')alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首次交付DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
+    else if(st.t==='临近DDL')alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首次交付 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
   });
-  DATA.oslist.filter(o=>!o.solved).forEach(o=>alerts.push({lv:'info',proj:o.name,tag:o.cls,msg:`${o.subj}：${o.item}`}));
-  const order={crit:0,warn:1,info:2};
-  alerts.sort((a,b)=>order[a.lv]-order[b.lv]);
+  const osByProj={};DATA.oslist.filter(o=>!o.solved).forEach(o=>osByProj[o.name]=(osByProj[o.name]||0)+1);
+  Object.entries(osByProj).forEach(([nm,n])=>alerts.push({lv:'info',proj:nm,tag:'OS未解决',msg:`${n} 项待处理`}));
+  const unback={};DATA.conf.filter(c=>c.unback>0).forEach(c=>unback[c.name]=(unback[c.name]||0)+c.unback);
+  Object.entries(unback).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未收回',msg:`${n} 份未收回`}));
+  const order={crit:0,warn:1,info:2};alerts.sort((a,b)=>order[a.lv]-order[b.lv]);
   $('ov-alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.lv}"><span class="tag">${a.tag}</span><b>${a.proj}</b>&nbsp;—&nbsp;${a.msg}</div>`).join(''):'<div style="color:#999;padding:8px;">暂无预警 🎉</div>';
-
-  // 图表
-  const named=P.filter(p=>p.wp>0).sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
-  bar('c-proj',{labels:named.map(p=>p.name),datasets:[{label:'完成率%',data:named.map(p=>rate(p.done,p.wp)),
-    backgroundColor:named.map(p=>{const r=rate(p.done,p.wp);return r>=100?'#2db84d':r>=70?'#4a90d9':'#f5a623';})}]},
-    {indexAxis:'y',scales:{x:{max:100}},plugins:{legend:{display:false}}});
-
-  const bp=P.filter(p=>p.budget>0);
-  bar('c-budget',{labels:bp.map(p=>p.name),datasets:[
-    {label:'预算',data:bp.map(p=>p.budget),backgroundColor:'#cfcfd6'},
-    {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#ffe600')}]},{});
-
-  const sum=k=>P.reduce((a,p)=>[a[0]+p[k][0],a[1]+p[k][1]],[0,0]);
-  const bk=sum('bkd'),td=sum('tod'),co=sum('cut'),ot=sum('oth');
-  bar('c-prog',{labels:['BKD','TOD','cut off','其他程序'],datasets:[
-    {label:'已完成',data:[bk[0],td[0],co[0],ot[0]],backgroundColor:'#2db84d'},
-    {label:'未完成',data:[bk[1]-bk[0],td[1]-td[0],co[1]-co[0],ot[1]-ot[0]],backgroundColor:'#e3e3e8'}]},
-    {scales:{x:{stacked:true},y:{stacked:true}}});
-
-  const osc={};DATA.oslist.forEach(o=>osc[o.cls]=(osc[o.cls]||0)+1);
-  pie('c-os',Object.keys(osc),Object.values(osc),['#e0383e','#f5a623','#4a90d9','#8e6fd6','#2db84d','#999']);
-
-  const tc={};P.forEach(p=>tc[p.type]=(tc[p.type]||0)+1);
-  pie('c-type',Object.keys(tc),Object.values(tc),['#2e2e38','#4a90d9','#f5a623','#2db84d','#8e6fd6','#e0383e','#999']);
-
-  // 燃尽/燃起：按 Pre DDL 累计
-  const wpd=DATA.detail.filter(d=>d.pre);
-  const dates=[...new Set(wpd.map(d=>d.pre.getTime()))].sort((a,b)=>a-b);
-  let cumPlan=0,cumDone=0;const plan=[],doneArr=[];
-  dates.forEach(t=>{wpd.filter(d=>d.pre.getTime()===t).forEach(d=>{cumPlan++;if(d.done)cumDone++;});plan.push(cumPlan);doneArr.push(cumDone);});
-  line('c-burn',dates.map(t=>new Date(t).toLocaleDateString('zh-CN')),[
-    {label:'计划累计（按Pre DDL）',data:plan,borderColor:'#bbb',backgroundColor:'rgba(0,0,0,0)',tension:.2},
-    {label:'已完成累计',data:doneArr,borderColor:'#2db84d',backgroundColor:'rgba(45,184,77,.1)',fill:true,tension:.2}]);
 }
 
 /* ----- 项目维度 ----- */
-function initProjFilters(){
-  const u=(k)=>[...new Set(DATA.projects.map(p=>p[k]).filter(Boolean))];
-  fillSel('pf-fic',u('fic'));fillSel('pf-eic',u('eic'));fillSel('pf-type',u('type'));
-  ['pf-fic','pf-eic','pf-type','pf-kw'].forEach(id=>$(id).oninput=renderProject);
+function renderProject(){
+  fillSel('pf-type',[...new Set(DATA.projects.map(p=>p.type).filter(Boolean))]);
+  ['pf-type','pf-kw'].forEach(id=>$(id).oninput=drawProjectTable);
+  drawProjectTable();
 }
 function fillSel(id,items){const s=$(id),cur=s.value;s.innerHTML=s.options[0].outerHTML+items.map(i=>`<option>${i}</option>`).join('');s.value=cur;}
-function renderProject(){
-  const fic=$('pf-fic').value,eic=$('pf-eic').value,tp=$('pf-type').value,kw=$('pf-kw').value.trim();
-  let rows=DATA.projects.filter(p=>(!fic||p.fic===fic)&&(!eic||p.eic===eic)&&(!tp||p.type===tp)&&(!kw||p.name.includes(kw)));
-  rows=rows.sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
+function drawProjectTable(){
+  const tp=$('pf-type').value,kw=$('pf-kw').value.trim();
+  let rows=DATA.projects.filter(p=>(!tp||p.type===tp)&&(!kw||p.name.includes(kw)));
+  rows.sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
   $('pf-count').textContent='共 '+rows.length+' 个项目';
-  const H=['项目','类型','状态','底稿完成','BKD','TOD','cut off','其他','自查','FIC复核','EIC复核','最终交付','预算/实际(h)','预算余量','首交DDL','倒计时','OS'];
-  $('t-project').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-  const pgPct=(a,b)=>{const r=rate(a,b);const c=r>=100?'var(--green)':r>=70?'var(--blue)':'var(--orange)';return `<div class="progress"><span style="width:${r}%;background:${c}"></span><em>${r}%(${a}/${b})</em></div>`;};
-  const pc=(p)=>p[1]?`${p[0]}/${p[1]}`:'—';
+  const thead=`<tr>
+    <th rowspan="2">项目</th><th rowspan="2">类型</th><th rowspan="2">状态</th>
+    <th colspan="3" class="group-th">预算使用（工时h）</th>
+    <th colspan="1" class="group-th">函证</th>
+    <th colspan="5" class="group-th">底稿进度（已达 / 总数）</th>
+    <th rowspan="2" class="cell-c">OS</th></tr>
+    <tr><th class="cell-c">预算</th><th class="cell-c">实际</th><th class="cell-c">使用率</th>
+    <th class="cell-c">已收/生成</th>
+    <th class="cell-c">是否完成</th><th class="cell-c">FIC复核</th><th class="cell-c">EIC复核</th><th class="cell-c">首次交付</th><th class="cell-c">最终交付</th></tr>`;
+  $('t-project').querySelector('thead').innerHTML=thead;
+  const f=(a,b)=>`<span class="frac">${a}/${b}</span>`;
   $('t-project').querySelector('tbody').innerHTML=rows.map(p=>{
-    const st=projStatus(p);const dd=daysTo(p.ddl1);
-    const remPct=p.budget>0?((p.budget-p.actual)/p.budget*100):null;
-    const remTxt=remPct===null?'—':`<span class="${p.actual>p.budget?'over':(remPct<30?'over':'under')}">${remPct.toFixed(0)}%</span>`;
-    const ddTxt=dd===null?'—':(dd<0?`<span class="over">逾期${-dd}天</span>`:(dd<=7?`<span style="color:var(--orange);font-weight:700">${dd}天</span>`:dd+'天'));
+    const st=projStatus(p);
+    const use=p.budget>0?rate(p.actual,p.budget):null;
+    const useTxt=use===null?'—':`<span class="${p.actual>p.budget?'over':(use>=70?'':'under')}">${use}%</span>`;
+    const cf=DATA.confByName[p.name.replace(/[-—].*/,'').trim()];
+    const cfTxt=cf?`${cf.back}/${cf.gen}${cf.unback>0?' <span class=over>(欠'+cf.unback+')</span>':''}`:'—';
     return `<tr>
-      <td><b>${p.name}</b><div style="font-size:11px;color:#aaa">${p.fic?'FIC:'+p.fic:''} ${p.eic?'EIC:'+p.eic:''}</div></td>
-      <td>${p.type}</td>
+      <td><b>${p.name}</b></td><td>${p.type}</td>
       <td><span class="pill" style="background:${st.c}">${st.t}</span></td>
-      <td>${pgPct(p.done,p.wp)}</td>
-      <td>${pc(p.bkd)}</td><td>${pc(p.tod)}</td><td>${pc(p.cut)}</td><td>${pc(p.oth)}</td>
-      <td>${p.self}/${p.wp}</td><td>${p.fic_r}/${p.wp}</td><td>${p.eic_r}/${p.wp}</td><td>${p.deliv2}/${p.wp}</td>
-      <td>${p.budget?p.budget.toFixed(0)+' / '+(p.actual>p.budget?'<span class=over>'+p.actual.toFixed(0)+'</span>':p.actual.toFixed(0)):'—'}</td>
-      <td>${remTxt}</td>
-      <td>${p.ddl1?p.ddl1.toLocaleDateString('zh-CN'):'—'}</td>
-      <td>${ddTxt}</td>
-      <td>${p.os||0}</td>
+      <td class="cell-c">${p.budget?p.budget.toFixed(0):'—'}</td>
+      <td class="cell-c">${p.budget?(p.actual>p.budget?'<span class=over>'+p.actual.toFixed(0)+'</span>':p.actual.toFixed(0)):'—'}</td>
+      <td class="cell-c">${useTxt}</td>
+      <td class="cell-c">${cfTxt}</td>
+      <td class="cell-c">${f(p.done,p.wp)}</td>
+      <td class="cell-c">${f(p.fic_r,p.wp)}</td>
+      <td class="cell-c">${f(p.eic_r,p.wp)}</td>
+      <td class="cell-c">${f(p.deliv1,p.wp)}</td>
+      <td class="cell-c">${f(p.deliv2,p.wp)}</td>
+      <td class="cell-c">${p.os?'<span class=over>'+p.os+'</span>':0}</td>
     </tr>`;}).join('');
 }
 
 /* ----- 员工维度 ----- */
 function renderStaff(){
-  const S=DATA.staff.sort((a,b)=>b.wp-a.wp);
-  const totalStaff=S.length,totalWp=S.reduce((s,x)=>s+x.wp,0);
-  const pending=S.reduce((s,x)=>s+(x.wp-x.self),0);
-  kpi([{l:'参与人数',v:totalStaff},{l:'底稿总数',v:totalWp,c:'blue'},
-    {l:'待自查底稿',v:pending,c:pending?'orange':'green'},
-    {l:'人均底稿',v:(totalWp/(totalStaff||1)).toFixed(1)}],'staff-cards');
-  bar('c-staff',{labels:S.map(s=>s.owner),datasets:[
-    {label:'已完成',data:S.map(s=>s.done),backgroundColor:'#2db84d',stack:'a'},
-    {label:'未完成',data:S.map(s=>s.wp-s.done),backgroundColor:'#e0383e',stack:'a'}]},
-    {scales:{x:{stacked:true},y:{stacked:true}}});
-  const H=['负责人','底稿数','已完成','完成率','待自查','FIC已复核','EIC已复核','涉及OS','参与项目数'];
+  if(!$('sf-name').dataset.init){fillSel('sf-name',DATA.staff.map(s=>s.owner).sort());$('sf-name').dataset.init='1';$('sf-name').oninput=()=>{renderStaff();renderCharts('staff');};}
+  const sel=$('sf-name').value;
+  let S=DATA.staff.slice().sort((a,b)=>b.wp-a.wp);
+  if(sel)S=S.filter(s=>s.owner===sel);
+  $('sf-count').textContent='共 '+S.length+' 人';
+  const totWp=S.reduce((s,x)=>s+x.wp,0),totStart=S.reduce((s,x)=>s+x.started,0),totDone=S.reduce((s,x)=>s+x.done,0);
+  kpi([{l:'员工数',v:S.length},{l:'分配底稿',v:totWp,c:'blue'},
+    {l:'已开始',v:totStart,c:'blue',sub:`未开始 ${totWp-totStart}`},
+    {l:'已完成',v:totDone,c:'green',sub:`完成率 ${rate(totDone,totWp)}%`},
+    {l:'未开始',v:totWp-totStart,c:(totWp-totStart)?'orange':'green'}],'staff-cards');
+  const H=['负责人','分配底稿','已开始','进行中','已完成','完成率','未开始','FIC已复核','EIC已复核','涉及OS','参与项目'];
   $('t-staff').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-staff').querySelector('tbody').innerHTML=S.map(s=>{const r=rate(s.done,s.wp);
-    const c=r>=100?'var(--green)':r>=80?'var(--blue)':'var(--orange)';
-    return `<tr><td><b>${s.owner}</b></td><td>${s.wp}</td><td>${s.done}</td>
+    const c=r>=100?'var(--green)':r>=60?'var(--blue)':'var(--orange)';const doing=s.started-s.done;
+    return `<tr><td><b>${s.owner}</b></td><td>${s.wp}</td><td>${s.started}</td>
+      <td>${doing?'<span style="color:var(--blue)">'+doing+'</span>':0}</td><td>${s.done}</td>
       <td><div class="progress"><span style="width:${r}%;background:${c}"></span><em>${r}%</em></div></td>
-      <td>${s.wp-s.self?'<span class=over>'+(s.wp-s.self)+'</span>':0}</td>
+      <td>${(s.wp-s.started)?'<span class=over>'+(s.wp-s.started)+'</span>':0}</td>
       <td>${s.fic}</td><td>${s.eic}</td><td>${s.os}</td><td>${s.projs.size}</td></tr>`;}).join('');
 }
 
@@ -429,12 +398,8 @@ function renderStaff(){
 function renderConf(){
   const C=DATA.conf;
   const gen=C.reduce((s,x)=>s+x.gen,0),sent=C.reduce((s,x)=>s+x.sent,0),back=C.reduce((s,x)=>s+x.back,0),unback=C.reduce((s,x)=>s+x.unback,0);
-  kpi([{l:'函证合计生成',v:gen},{l:'已发出',v:sent,c:'blue'},{l:'已收回',v:back,c:'green'},
+  kpi([{l:'合计生成',v:gen},{l:'已发出',v:sent,c:'blue'},{l:'已收回',v:back,c:'green'},
     {l:'未收回',v:unback,c:unback?'red':'green'},{l:'回收率',v:rate(back,gen)+'%',c:'blue'}],'conf-cards');
-  bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
-    {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
-    {label:'未收回',data:C.map(x=>x.unback),backgroundColor:'#e0383e',stack:'a'}]},
-    {scales:{x:{stacked:true},y:{stacked:true}}});
   const H=['项目','合计生成','已发出','未发出','已收回','未收回','回收率','负责人','备注'];
   $('t-conf').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-conf').querySelector('tbody').innerHTML=C.map(x=>{const r=rate(x.back,x.gen);
@@ -446,30 +411,60 @@ function renderConf(){
 /* ----- OS ----- */
 function renderOS(){
   const O=DATA.oslist;const open=O.filter(o=>!o.solved).length;
-  const byCls={};O.forEach(o=>byCls[o.cls]=(byCls[o.cls]||0)+1);
-  kpi([{l:'OS 事项总数',v:O.length},{l:'未解决',v:open,c:open?'red':'green'},
+  kpi([{l:'OS 总数',v:O.length},{l:'未解决',v:open,c:open?'red':'green'},
     {l:'已解决',v:O.length-open,c:'green'},
-    {l:'涉及项目数',v:new Set(O.map(o=>o.name)).size,c:'purple'}],'os-cards');
-  const byProj={};O.forEach(o=>byProj[o.name]=(byProj[o.name]||0)+1);
-  bar('c-osproj',{labels:Object.keys(byProj),datasets:[{label:'OS数',data:Object.values(byProj),backgroundColor:'#8e6fd6'}]},
-    {indexAxis:'y',plugins:{legend:{display:false}}});
-  pie('c-osstat',['已解决','未解决'],[O.length-open,open],['#2db84d','#e0383e']);
+    {l:'涉及项目',v:new Set(O.map(o=>o.name)).size,c:'purple'}],'os-cards');
   const H=['项目','Entity','科目','OS事项','分类','提出时间','负责人','是否解决','备注'];
   $('t-os').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-os').querySelector('tbody').innerHTML=O.map(o=>`<tr>
     <td><b>${o.name}</b></td><td>${o.entity}</td><td>${o.subj}</td>
-    <td style="white-space:normal;max-width:280px">${o.item}</td>
+    <td style="white-space:normal;max-width:300px">${o.item}</td>
     <td><span class="pill" style="background:${o.cls.includes('PBC')?'#f5a623':o.cls.includes('issue')?'#e0383e':'#4a90d9'}">${o.cls}</span></td>
     <td>${o.raise?o.raise.toLocaleDateString('zh-CN'):''}</td><td>${o.owner}</td>
     <td>${o.solved?'<span class=under>已解决</span>':'<span class=over>未解决</span>'}</td>
     <td style="white-space:normal;max-width:220px">${o.note||''}</td></tr>`).join('');
 }
 
-/* ===== Chart 封装 ===== */
+/* ===== 图表（只画当前可见页）===== */
+function renderCharts(tab){
+  if(typeof Chart==='undefined'||!DATA)return;
+  if(tab==='overview'){
+    const named=DATA.projects.filter(p=>p.wp>0).sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
+    bar('c-proj',{labels:named.map(p=>p.name),datasets:[{label:'完成率%',data:named.map(p=>rate(p.done,p.wp)),
+      backgroundColor:named.map(p=>{const r=rate(p.done,p.wp);return r>=100?'#2db84d':r>=70?'#4a90d9':'#f5a623';})}]},
+      {indexAxis:'y',scales:{x:{max:100}},plugins:{legend:{display:false}}});
+    const bp=DATA.projects.filter(p=>p.budget>0);
+    bar('c-budget',{labels:bp.map(p=>p.name),datasets:[
+      {label:'预算',data:bp.map(p=>p.budget),backgroundColor:'#cfcfd6'},
+      {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#ffe600')}]},
+      {indexAxis:'y'});
+  }else if(tab==='staff'){
+    const sel=$('sf-name').value;let S=DATA.staff.slice().sort((a,b)=>b.wp-a.wp);if(sel)S=S.filter(s=>s.owner===sel);
+    bar('c-staff',{labels:S.map(s=>s.owner),datasets:[
+      {label:'已完成',data:S.map(s=>s.done),backgroundColor:'#2db84d',stack:'a'},
+      {label:'进行中',data:S.map(s=>s.started-s.done),backgroundColor:'#4a90d9',stack:'a'},
+      {label:'未开始',data:S.map(s=>s.wp-s.started),backgroundColor:'#e3e3e8',stack:'a'}]},
+      {scales:{x:{stacked:true},y:{stacked:true}}});
+  }else if(tab==='conf'){
+    const C=DATA.conf;
+    bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
+      {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
+      {label:'未收回',data:C.map(x=>x.unback),backgroundColor:'#e0383e',stack:'a'}]},
+      {scales:{x:{stacked:true},y:{stacked:true}}});
+  }else if(tab==='os'){
+    const O=DATA.oslist;const open=O.filter(o=>!o.solved).length;
+    const byProj={};O.forEach(o=>byProj[o.name]=(byProj[o.name]||0)+1);
+    bar('c-osproj',{labels:Object.keys(byProj),datasets:[{label:'OS数',data:Object.values(byProj),backgroundColor:'#8e6fd6'}]},
+      {indexAxis:'y',plugins:{legend:{display:false}}});
+    pie('c-osstat',['已解决','未解决'],[O.length-open,open],['#2db84d','#e0383e']);
+  }
+}
+
+/* ===== Chart 封装：固定容器高度 + 关闭动画 + 关闭自动resize抖动 ===== */
 function destroy(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
-function bar(id,data,opts){destroy(id);charts[id]=new Chart($(id),{type:'bar',data,options:Object.assign({responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}},opts)});}
-function line(id,labels,datasets){destroy(id);charts[id]=new Chart($(id),{type:'line',data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});}
-function pie(id,labels,data,colors){destroy(id);charts[id]=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});}
+const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,resizeDelay:120,plugins:{legend:{position:'bottom'}}};
+function bar(id,data,opts){destroy(id);charts[id]=new Chart($(id),{type:'bar',data,options:Object.assign({},baseOpts,opts)});}
+function pie(id,labels,data,colors){destroy(id);charts[id]=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});}
 </script>
 </body>
 </html>
