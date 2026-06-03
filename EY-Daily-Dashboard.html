@@ -161,7 +161,7 @@ window.addEventListener('load',()=>{
   if(okC){Chart.defaults.animation=false;Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';}
   $('diag').innerHTML=`打开方式：<b>${isFile?'本地双击(file://)':location.protocol+'//'}</b> ｜ Excel库：<b style="color:${okX?'#1d6b35':'#a01b22'}">${okX?'已加载✓':'未加载✗'}</b> ｜ 图表库：<b style="color:${okC?'#1d6b35':'#a01b22'}">${okC?'已加载✓':'未加载✗'}</b> ｜ 自动刷新：<b>${(hasFSA&&!isFile)?'支持✓':'手动刷新'}</b>`;
   if(!okX)banner('err','❌ <b>Excel解析库未加载</b>（公司网络可能屏蔽了外网）。我可以帮你做一个把库内嵌的<b>离线版</b>，断网也能用。');
-  else if(isFile)banner('warn','⚠️ 本地双击打开，浏览器禁用了“自动刷新”。看板可正常用，改完Excel点右上角<b>「刷新」</b>即可。');
+  else if(isFile)banner('warn','⚠️ 你是<b>双击本地文件</b>打开的，浏览器出于安全禁止网页自动重读硬盘文件，因此「刷新」只能让你<b>重新选一次文件</b>。<br>想要真正“改完Excel→看板自动更新”：用网址打开本看板即可（数据仍只在你本地读取，不上传）。开启方法见下方对话说明，开启后地址形如 <code>https://barrenspring.github.io/DM-/EY-Daily-Dashboard.html</code>。');
 });
 function banner(t,h){$('banner').className='banner show '+t;$('banner').innerHTML=h;}
 function hideBanner(){$('banner').className='banner';}
@@ -174,7 +174,9 @@ async function pickFile(){
   if(hasFSA&&!isFile){try{[fileHandle]=await window.showOpenFilePicker({types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx','.xlsm','.xls']}}]});await readHandle(true);auto();after('auto');return;}catch(e){if(e&&e.name==='AbortError')return;}}
   $('legacyInput').value='';$('legacyInput').click();
 }
-function after(m){$('refreshBtn').style.display='inline-block';$('autoText').textContent=m==='auto'?'自动刷新中（每5秒）':'已加载 · 手动刷新';}
+function after(m){$('refreshBtn').style.display='inline-block';
+  if(m==='auto'){$('refreshBtn').textContent='刷新';$('autoText').textContent='自动刷新中（每5秒）';}
+  else{$('refreshBtn').textContent='重新选择文件';$('autoText').textContent='已加载（双击模式，需手动重选刷新）';}}
 async function refresh(){if(fileHandle){try{await readHandle(true);}catch(e){banner('err','刷新失败：'+e.message);}}else{$('legacyInput').value='';$('legacyInput').click();}}
 function auto(){if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(async()=>{try{await readHandle(false);}catch(e){}},5000);}
 async function readHandle(force){const f=await fileHandle.getFile();if(!force&&f.lastModified===lastMod)return;lastMod=f.lastModified;parse(await f.arrayBuffer());mark();}
