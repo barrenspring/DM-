@@ -4,8 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Management 看板 · 底稿交付中心</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- 优先用同目录下的本地库（OneDrive/内网可用）；本地没有时回退到 CDN -->
+<script>window.__libfail=[];</script>
+<script src="xlsx.full.min.js" onerror="window.__libfail.push('xlsx-local')"></script>
+<script>if(typeof XLSX==='undefined'){document.write('<script src=\"https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js\"><\/script>');}</script>
+<script src="chart.umd.min.js" onerror="window.__libfail.push('chart-local')"></script>
+<script>if(typeof Chart==='undefined'){document.write('<script src=\"https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js\"><\/script>');}</script>
+<!-- 共享数据（由维护者生成并放到同目录）。不存在时静默忽略 -->
+<script src="data.js" onerror="window.__noData=true"></script>
 <style>
 :root{--ey-black:#2e2e38;--ey-yellow:#ffe600;--ey-gray:#f3f3f5;--green:#2db84d;--red:#e0383e;--orange:#f5a623;--blue:#4a90d9;--purple:#8e6fd6;--border:#e3e3e8;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -75,6 +81,7 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
     <span><span class="status-dot"></span> <span id="autoText">未连接</span></span>
     <span id="lastUpdate" style="color:#bdbdc7"></span>
     <button id="refreshBtn" class="ghost" style="display:none;">刷新</button>
+    <button id="exportBtn" class="ghost" style="display:none;">⬇ 更新共享数据</button>
     <button id="pickBtn">选择 Excel 文件</button>
   </div>
 </header>
@@ -92,8 +99,10 @@ footer{text-align:center;color:#aaa;font-size:12px;padding:18px;}
 
 <div class="wrap">
   <div id="emptyState" class="empty">
-    <p style="font-size:15px;">👋 请点击右上角「选择 Excel 文件」，选中 <b>底稿分工及进度表-每日更新.xlsx</b></p>
-    <p style="font-size:13px;margin-top:8px;color:#bbb;">读取后自动生成看板。改完 Excel 保存后点「刷新」（用 https 打开时自动刷新）。</p>
+    <p style="font-size:15px;">👋 正在尝试加载共享数据…</p>
+    <p style="font-size:13px;margin-top:10px;color:#999;line-height:1.8;">
+      · <b>查看者</b>：本看板会自动读取同目录下的 <code>data.js</code> 显示最新进度，无需任何操作。<br>
+      · <b>维护者（你）</b>：点右上角「选择 Excel 文件」载入台账，再点「⬇ 更新共享数据」生成新的 <code>data.js</code>，覆盖到 OneDrive 文件夹即可让所有人看到更新。</p>
   </div>
 
   <!-- 全览 -->
@@ -155,14 +164,35 @@ const hasFSA=('showOpenFilePicker'in window), isFile=(location.protocol==='file:
 let fileHandle=null,lastMod=0,autoTimer=null,DATA=null,charts={};
 const TODAY=new Date();
 
-/* ===== 诊断 ===== */
+/* ===== 诊断 + 查看者自动加载 data.js ===== */
 window.addEventListener('load',()=>{
   const okX=typeof XLSX!=='undefined',okC=typeof Chart!=='undefined';
   if(okC){Chart.defaults.animation=false;Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';}
-  $('diag').innerHTML=`打开方式：<b>${isFile?'本地双击(file://)':location.protocol+'//'}</b> ｜ Excel库：<b style="color:${okX?'#1d6b35':'#a01b22'}">${okX?'已加载✓':'未加载✗'}</b> ｜ 图表库：<b style="color:${okC?'#1d6b35':'#a01b22'}">${okC?'已加载✓':'未加载✗'}</b> ｜ 自动刷新：<b>${(hasFSA&&!isFile)?'支持✓':'手动刷新'}</b>`;
-  if(!okX)banner('err','❌ <b>Excel解析库未加载</b>（公司网络可能屏蔽了外网）。我可以帮你做一个把库内嵌的<b>离线版</b>，断网也能用。');
-  else if(isFile)banner('warn','⚠️ 你是<b>双击本地文件</b>打开的，浏览器出于安全禁止网页自动重读硬盘文件，因此「刷新」只能让你<b>重新选一次文件</b>。<br>想要真正“改完Excel→看板自动更新”：用网址打开本看板即可（数据仍只在你本地读取，不上传）。开启方法见下方对话说明，开启后地址形如 <code>https://barrenspring.github.io/DM-/EY-Daily-Dashboard.html</code>。');
+  $('diag').innerHTML=`打开方式：<b>${isFile?'本地双击(file://)':location.protocol+'//'}</b> ｜ Excel库：<b style="color:${okX?'#1d6b35':'#a01b22'}">${okX?'已加载✓':'未加载✗'}</b> ｜ 图表库：<b style="color:${okC?'#1d6b35':'#a01b22'}">${okC?'已加载✓':'未加载✗'}</b> ｜ 共享数据：<b id="diagData">检测中…</b>`;
+
+  // 查看者模式：若同目录存在 data.js（由维护者生成），自动加载，无需选文件
+  loadSharedData();
 });
+
+function loadSharedData(){
+  // window.__DASHBOARD_DATA 由同目录 data.js 注入（顶部已用 <script src="data.js"> 静态加载）
+  if(window.__DASHBOARD_DATA){
+    DATA=window.__DASHBOARD_DATA.data;
+    const gen=window.__DASHBOARD_DATA.generatedAt||'';
+    $('diagData')&&($('diagData').textContent='已加载✓');
+    $('lastUpdate').textContent=gen?('数据更新于 '+gen):'';
+    $('autoText').textContent='查看共享数据';
+    applyData(false);
+    return;
+  }
+  noShared();
+}
+function noShared(){
+  $('diagData')&&($('diagData').textContent='无（维护者请生成）');
+  if(!okGlobalX()){banner('err','❌ <b>Excel解析库未加载</b>（公司网络可能屏蔽了外网，且本地缺少 xlsx.full.min.js）。请把 xlsx.full.min.js 与 chart.umd.min.js 放到本文件同目录。');}
+  else if(isFile){banner('warn','ℹ️ 未发现共享数据 <code>data.js</code>。<br>· <b>查看者</b>：请等维护者把 data.js 放入本文件夹。<br>· <b>维护者</b>：点右上「选择 Excel 文件」→「⬇ 更新共享数据」生成 data.js 放入同文件夹即可。');}
+}
+function okGlobalX(){return typeof XLSX!=='undefined';}
 function banner(t,h){$('banner').className='banner show '+t;$('banner').innerHTML=h;}
 function hideBanner(){$('banner').className='banner';}
 
@@ -182,6 +212,18 @@ function auto(){if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(asyn
 async function readHandle(force){const f=await fileHandle.getFile();if(!force&&f.lastModified===lastMod)return;lastMod=f.lastModified;parse(await f.arrayBuffer());mark();}
 function mark(){$('lastUpdate').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN');}
 
+/* ===== 维护者：生成 data.js 供他人查看 ===== */
+$('exportBtn').onclick=()=>{
+  if(!DATA){banner('warn','请先「选择 Excel 文件」载入数据，再生成共享数据。');return;}
+  const payload={generatedAt:new Date().toLocaleString('zh-CN'),data:DATA};
+  const js='window.__DASHBOARD_DATA='+JSON.stringify(payload)+';';
+  const blob=new Blob([js],{type:'text/javascript'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='data.js';
+  document.body.appendChild(a);a.click();a.remove();
+  banner('warn','✅ 已生成 <code>data.js</code>（在你的下载文件夹）。请把它<b>覆盖到 OneDrive 看板所在的同一文件夹</b>，其他人打开 HTML 即可看到最新进度。');
+};
+
 /* ===== 解析 ===== */
 function findTable(aoa,marker){for(let i=0;i<aoa.length;i++){const t=aoa[i].map(x=>String(x==null?'':x).trim());if(marker(t))return{headers:t,rows:aoa.slice(i+1)};}return{headers:[],rows:[]};}
 const idxsOf=(h,n)=>h.map((x,i)=>x===n?i:-1).filter(i=>i>=0);
@@ -194,9 +236,15 @@ const datev=v=>v instanceof Date?v:(v&&!isNaN(Date.parse(v))?new Date(v):null);
 
 function parse(buf){
   const wb=XLSX.read(buf,{type:'array',cellDates:true});
+  const D=buildData(wb);
+  if(!D)return;
+  DATA=D; applyData(true);
+}
+
+function buildData(wb){
   const sheet=n=>wb.Sheets[n]?XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''}):[];
   const aoaKB=sheet('看板'),aoaBase=sheet('项目基础信息'),aoaDet=sheet('底稿进度'),aoaConf=sheet('银行函证进度'),aoaOS=sheet('OS list及缺失PBC');
-  if(!aoaBase.length&&!aoaDet.length){banner('warn','⚠️ 没找到预期的工作表（项目基础信息/底稿进度）。请确认选对了文件。');return;}
+  if(!aoaBase.length&&!aoaDet.length){banner('warn','⚠️ 没找到预期的工作表（项目基础信息/底稿进度）。请确认选对了文件。');return null;}
 
   const KB=findTable(aoaKB,r=>r.includes('服务单号')&&r.includes('预算'));const gKB=cellGetter(KB.headers);
   const budgetBySn={};
@@ -205,33 +253,33 @@ function parse(buf){
 
   const B=findTable(aoaBase,r=>r.includes('服务单号')&&r.includes('首次交付DDL'));const gB=cellGetter(B.headers);
   const projects={};const nameToSn={};
+  const ms=d=>{const x=datev(d);return x?x.getTime():null;};
   B.rows.forEach(r=>{const sn=String(gB(r,'服务单号')).trim();const nm=String(gB(r,'项目名称')).trim();
     if(!nm)return;const key=sn||nm;nameToSn[nm]=key;
     projects[key]={sn:key,name:nm,type:String(gB(r,'项目类型')).trim()||'未分类',
-      ddl1:datev(gB(r,'首次交付DDL')),ddl2:datev(gB(r,'整体交付DDL')),
+      ddl1:ms(gB(r,'首次交付DDL')),ddl2:ms(gB(r,'整体交付DDL')),
       budget:0,actual:0,wp:0,started:0,done:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,os:0};
   });
 
   const D=findTable(aoaDet,r=>r.includes('WP服务单')||r.includes('entity'));const gD=cellGetter(D.headers);
-  const detail=[];const staff={};
+  const staff={};
   D.rows.forEach(r=>{const sn=String(gD(r,'WP服务单')).trim();const nm=String(gD(r,'项目')).trim();
     const entity=String(gD(r,'entity')).trim();if(!nm&&!entity)return;
     const key=projects[sn]?sn:(nameToSn[nm]||sn||nm);
     const bkd=gD(r,'BKD');
-    const rec={name:nm,entity,owner:String(gD(r,'负责人')).trim()||'未分配',
+    const rec={name:nm,owner:String(gD(r,'负责人')).trim()||'未分配',
       started:has(bkd),done:Y(gD(r,'是否完成')),fic:Y(gD(r,'FIC复核')),eic:Y(gD(r,'EIC复核')),
-      deliv1:Y(gD(r,'首次交付')),deliv2:Y(gD(r,'最终交付')),
-      os:String(gD(r,'OS事项')).trim()};
-    detail.push(rec);
+      deliv1:Y(gD(r,'首次交付')),deliv2:Y(gD(r,'最终交付')),os:String(gD(r,'OS事项')).trim()};
     let p=projects[key];if(!p){p=projects[key]={sn:key,name:nm,type:'未分类',ddl1:null,ddl2:null,budget:0,actual:0,wp:0,started:0,done:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,os:0};nameToSn[nm]=key;}
     p.wp++;if(rec.started)p.started++;if(rec.done)p.done++;if(rec.fic)p.fic_r++;if(rec.eic)p.eic_r++;
     if(rec.deliv1)p.deliv1++;if(rec.deliv2)p.deliv2++;
     if(rec.os&&rec.os!=='无')p.os++;
-    const s=staff[rec.owner]||(staff[rec.owner]={owner:rec.owner,wp:0,started:0,done:0,fic:0,eic:0,os:0,projs:new Set()});
+    const s=staff[rec.owner]||(staff[rec.owner]={owner:rec.owner,wp:0,started:0,done:0,fic:0,eic:0,os:0,_projs:new Set()});
     s.wp++;if(rec.started)s.started++;if(rec.done)s.done++;if(rec.fic)s.fic++;if(rec.eic)s.eic++;
-    if(rec.os&&rec.os!=='无')s.os++;if(rec.name)s.projs.add(rec.name);
+    if(rec.os&&rec.os!=='无')s.os++;if(rec.name)s._projs.add(rec.name);
   });
   Object.values(projects).forEach(p=>{const b=budgetBySn[p.sn];if(b){p.budget=b.budget;p.actual=b.actual;}});
+  const staffArr=Object.values(staff).map(s=>({owner:s.owner,wp:s.wp,started:s.started,done:s.done,fic:s.fic,eic:s.eic,os:s.os,projN:s._projs.size}));
 
   const C=findTable(aoaConf,r=>r.includes('服务单号')&&(r.includes('已收回')||r.includes('合计生成')));const gC=cellGetter(C.headers);
   const conf=[];
@@ -247,17 +295,22 @@ function parse(buf){
   O.rows.forEach(r=>{const nm=String(gO(r,'项目')).trim();const item=String(gO(r,'OS事项')).trim();
     if(!item)return;
     oslist.push({name:nm,entity:String(gO(r,'Entity')).trim(),subj:String(gO(r,'科目')).trim(),item,
-      cls:String(gO(r,'事项分类')).trim()||'未分类',raise:datev(gO(r,'提出时间')),
+      cls:String(gO(r,'事项分类')).trim()||'未分类',raise:ms(gO(r,'提出时间')),
       owner:String(gO(r,'CSDC负责人')).trim(),solved:Y(gO(r,'是否解决')),note:String(gO(r,'备注')).trim()});});
 
-  DATA={projects:Object.values(projects).filter(p=>p.name),staff:Object.values(staff),conf,confByName,oslist};
+  return {projects:Object.values(projects).filter(p=>p.name),staff:staffArr,conf,confByName,oslist};
+}
+
+function applyData(fromExcel){
   hideBanner();$('tabs').style.display='flex';$('emptyState').style.display='none';
+  if(fromExcel)$('exportBtn').style.display='inline-block';
   renderAll();showTab(currentTab);
 }
 
 /* ===== 计算辅助 ===== */
 const rate=(a,b)=>b?Math.round(a/b*100):0;
 const daysTo=d=>d?Math.ceil((d-TODAY)/86400000):null;
+const fmtMs=ms=>ms?new Date(ms).toLocaleDateString('zh-CN'):'';
 function projStatus(p){
   const r=rate(p.done,p.wp);
   if(p.wp===0||p.started===0)return{t:'未开始',c:'#999'};
@@ -393,7 +446,7 @@ function renderStaff(){
       <td>${doing?'<span style="color:var(--blue)">'+doing+'</span>':0}</td><td>${s.done}</td>
       <td><div class="progress"><span style="width:${r}%;background:${c}"></span><em>${r}%</em></div></td>
       <td>${(s.wp-s.started)?'<span class=over>'+(s.wp-s.started)+'</span>':0}</td>
-      <td>${s.fic}</td><td>${s.eic}</td><td>${s.os}</td><td>${s.projs.size}</td></tr>`;}).join('');
+      <td>${s.fic}</td><td>${s.eic}</td><td>${s.os}</td><td>${s.projN}</td></tr>`;}).join('');
 }
 
 /* ----- 函证 ----- */
@@ -422,7 +475,7 @@ function renderOS(){
     <td><b>${o.name}</b></td><td>${o.entity}</td><td>${o.subj}</td>
     <td style="white-space:normal;max-width:300px">${o.item}</td>
     <td><span class="pill" style="background:${o.cls.includes('PBC')?'#f5a623':o.cls.includes('issue')?'#e0383e':'#4a90d9'}">${o.cls}</span></td>
-    <td>${o.raise?o.raise.toLocaleDateString('zh-CN'):''}</td><td>${o.owner}</td>
+    <td>${fmtMs(o.raise)}</td><td>${o.owner}</td>
     <td>${o.solved?'<span class=under>已解决</span>':'<span class=over>未解决</span>'}</td>
     <td style="white-space:normal;max-width:220px">${o.note||''}</td></tr>`).join('');
 }
