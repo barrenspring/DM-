@@ -141,7 +141,7 @@ body.print-prep .page{display:block!important;}
     <div class="filters">
       <select id="pf-type"><option value="">全部类型</option></select>
       <select id="pf-status"><option value="">全部状态</option></select>
-      <input type="text" id="pf-kw" placeholder="搜索项目…" style="margin-left:auto;">
+      <input type="text" id="pf-kw" placeholder="搜索项目…">
       <span style="font-size:12px;color:#999;" id="pf-count"></span>
     </div>
     <div class="charts">
@@ -161,8 +161,8 @@ body.print-prep .page{display:block!important;}
     <div class="filters">
       <select id="cf-proj"><option value="">全部项目</option></select>
       <select id="cf-mode"><option value="">全部</option><option value="unback">仅未收回</option><option value="unsent">仅未发出</option></select>
+      <input type="text" id="cf-kw" placeholder="搜索项目…">
       <span style="font-size:12px;color:#999;" id="cf-count"></span>
-      <input type="text" id="cf-kw" placeholder="搜索项目…" style="margin-left:auto;">
     </div>
     <div class="cards" id="conf-cards"></div>
     <div class="charts">
@@ -251,22 +251,25 @@ const valueLabelPlugin={
       });
       return;
     }
-    // bar：把数值标在柱的“末端外侧”，不压在图上
+    // bar：数值显示在柱的外侧（柱顶/末端上方），不压在柱子上
     const horizontal=chart.options.indexAxis==='y';
-    ctx.save();ctx.font='11px "Microsoft YaHei",sans-serif';ctx.fillStyle='#555';
     const stacked=chart.options.scales&&chart.options.scales.x&&chart.options.scales.x.stacked;
+    const LABEL='#2c5d8f';                      // 标签颜色（深蓝，区别于柱色，清晰不刺眼）
+    const fmt=v=>Number.isInteger(v)?v:Math.round(v);
+    ctx.save();ctx.font='bold 10px "Microsoft YaHei",sans-serif';
     chart.data.datasets.forEach((ds,di)=>{
       const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
       meta.data.forEach((el,i)=>{const v=+ds.data[i]||0;if(!v)return;
-        if(stacked){ // 堆叠：标在每段中间（段内），用深色小字
+        if(stacked){ // 堆叠：标在每段中间（段内白字），最清晰
           const p=el.tooltipPosition();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
-          ctx.fillText(v,p.x,p.y);
-        }else if(horizontal){ // 非堆叠横向：标在柱右侧外
-          ctx.fillStyle='#555';ctx.textAlign='left';ctx.textBaseline='middle';
-          ctx.fillText(v,el.x+5,el.y);
+          ctx.fillText(fmt(v),p.x,p.y);
+        }else if(horizontal){ // 非堆叠横向：标在柱末端“上方”，浮于白底
+          const h=el.height||10;
+          ctx.fillStyle=LABEL;ctx.textAlign='right';ctx.textBaseline='bottom';
+          ctx.fillText(fmt(v),el.x,el.y-h/2-1);
         }else{ // 非堆叠纵向：标在柱顶上方
-          ctx.fillStyle='#555';ctx.textAlign='center';ctx.textBaseline='bottom';
-          ctx.fillText(v,el.x,el.y-3);
+          ctx.fillStyle=LABEL;ctx.textAlign='center';ctx.textBaseline='bottom';
+          ctx.fillText(fmt(v),el.x,el.y-4);
         }
       });
     });
