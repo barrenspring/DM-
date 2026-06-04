@@ -196,7 +196,7 @@ body.print-prep .page{display:block!important;}
       <div class="chart-box"><h3>OS 分类分布</h3><div class="cc sm"><canvas id="c-oscls"></canvas></div></div>
     </div>
     <div class="table-box"><table id="t-os"><thead></thead><tbody></tbody></table></div>
-    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：内部卡点＝需底稿交付中心(CSDC)解决的事项（OS_CSDC、issue），应尽快处理；外部卡点＝需项目组或客户跟进的事项（OS_ET、OS_PBC、提醒事项）。</p>
+    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：内部卡点＝需底稿交付中心(CSDC)解决的事项（OS_CSDC），应尽快处理；外部卡点＝需项目组或客户跟进的事项（OS_ET、OS_PBC、issue、提醒事项）。</p>
   </div>
 </div>
 
@@ -341,14 +341,14 @@ function buildData(wb){
     confTypes['纸质格式一']+=p1;confTypes['纸质格式二']+=p2;confTypes['HK17']+=hk;
     conf.push({sn,name:nm,gen:numv(gC(r,'合计生成')),sent:numv(gC(r,'已发出')),unsent:numv(gC(r,'未发出')),
       back:numv(gC(r,'已收回')),unback:numv(gC(r,'未收回')),owner:String(gC(r,'负责人')).trim(),note:String(gC(r,'备注')).trim(),
-      elec:e1+e2+cfm,paper:p1+p2});});
+      elec:e1+e2+cfm,paper:p1+p2+hk});});
   const confByName={};conf.forEach(c=>{const k=(c.name||'').replace(/[-—].*/,'').trim();
     const t=confByName[k]||(confByName[k]={gen:0,sent:0,unsent:0,back:0,unback:0});t.gen+=c.gen;t.sent+=c.sent;t.unsent+=c.unsent;t.back+=c.back;t.unback+=c.unback;});
 
   const O=findTable(aoaOS,r=>r.includes('OS事项')&&(r.includes('序号')||r.includes('事项分类')));const gO=cellGetter(O.headers);
   const oslist=[];
-  // 内部卡点：需 CSDC(底稿交付中心)解决的（OS_CSDC、issue）；外部卡点：需项目组/客户解决（OS_ET、OS_PBC、提醒事项）
-  const isInternal=cls=>/CSDC|issue/i.test(cls);
+  // 内部卡点：需 CSDC(底稿交付中心)解决的（OS_CSDC）；外部卡点：需项目组/客户解决（OS_ET、OS_PBC、issue、提醒事项）
+  const isInternal=cls=>/CSDC/i.test(cls);
   O.rows.forEach(r=>{const nm=String(gO(r,'项目')).trim();const item=String(gO(r,'OS事项')).trim();
     if(!item)return;
     const cls=String(gO(r,'事项分类')).trim()||'未分类';
