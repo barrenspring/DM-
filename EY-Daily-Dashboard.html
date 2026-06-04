@@ -39,6 +39,7 @@ header .sub{font-size:12px;color:#bdbdc7;}
 .card .sub2{font-size:11px;color:#aaa;margin-top:3px;}
 .card.red{border-top-color:var(--red);}.card.green{border-top-color:var(--green);}
 .card.orange{border-top-color:var(--orange);}.card.blue{border-top-color:var(--blue);}.card.purple{border-top-color:var(--purple);}
+.card.lgreen{border-top-color:#7ed957;}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
 @media(max-width:980px){.charts{grid-template-columns:1fr;}}
 .chart-box{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
@@ -105,10 +106,10 @@ body.print-prep .page{display:block!important;}
 
 <div class="tabs" id="tabs" style="display:none;">
   <button data-tab="overview" class="active">全览</button>
-  <button data-tab="project">项目维度</button>
-  <button data-tab="staff">员工维度</button>
+  <button data-tab="project">底稿进度</button>
   <button data-tab="conf">函证进度</button>
   <button data-tab="os">OS 进度</button>
+  <button data-tab="staff">员工维度</button>
 </div>
 
 <div class="wrap">
@@ -123,51 +124,42 @@ body.print-prep .page{display:block!important;}
   <div class="page" id="page-overview">
     <div class="print-title">全览</div>
     <div class="cards" id="ov-cards"></div>
+    <div class="cards" id="ov-cards2"></div>
     <div class="panel"><h3>⚠ 预警事项</h3><div id="ov-alerts"></div></div>
     <div class="charts">
       <div class="chart-box"><h3>项目交付状态分布</h3><div class="cc"><canvas id="c-delivery"></canvas></div></div>
       <div class="chart-box"><h3>项目类型分布</h3><div class="cc"><canvas id="c-type"></canvas></div></div>
     </div>
-    <div class="charts">
-      <div class="chart-box"><h3>各科目(section)底稿完成情况</h3><div class="cc tall"><canvas id="c-section"></canvas></div></div>
-      <div class="chart-box"><h3>预算 vs 实际工时（超支标红）</h3><div class="cc tall"><canvas id="c-budget"></canvas></div></div>
+    <div class="charts" style="grid-template-columns:1fr;">
+      <div class="chart-box"><h3>预算 vs 实际工时（超支标红，未超支为绿色）</h3><div class="cc tall"><canvas id="c-budget"></canvas></div></div>
     </div>
   </div>
 
-  <!-- 项目维度 -->
+  <!-- 底稿进度（原项目维度）-->
   <div class="page" id="page-project">
-    <div class="print-title">项目维度</div>
+    <div class="print-title">底稿进度</div>
     <div class="filters">
       <select id="pf-type"><option value="">全部类型</option></select>
       <select id="pf-status"><option value="">全部状态</option></select>
-      <input type="text" id="pf-kw" placeholder="搜索项目…">
+      <input type="text" id="pf-kw" placeholder="搜索项目…" style="margin-left:auto;">
       <span style="font-size:12px;color:#999;" id="pf-count"></span>
     </div>
     <div class="charts">
-      <div class="chart-box"><h3>底稿进度（已完成 / 未完成）</h3><div class="cc tall"><canvas id="c-projwp"></canvas></div></div>
-      <div class="chart-box"><h3>预算使用率（%）</h3><div class="cc tall"><canvas id="c-projbud"></canvas></div></div>
+      <div class="chart-box"><h3>各项目底稿（已完成 / 未完成）</h3><div class="cc tall"><canvas id="c-projwp"></canvas></div></div>
+      <div class="chart-box"><h3>待复核统计（待FIC / 待EIC / 已复核）</h3><div class="cc tall"><canvas id="c-review"></canvas></div></div>
+    </div>
+    <div class="charts" style="grid-template-columns:1fr;">
+      <div class="chart-box"><h3>各科目(section)底稿完成情况</h3><div class="cc tall"><canvas id="c-section"></canvas></div></div>
     </div>
     <div class="table-box"><table id="t-project"><thead></thead><tbody></tbody></table></div>
     <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：底稿进度按“已完成→FIC复核→EIC复核→首次交付→最终交付”流程展示各阶段已达数量 / 该项目底稿总数。</p>
-  </div>
-
-  <!-- 员工维度 -->
-  <div class="page" id="page-staff">
-    <div class="print-title">员工维度</div>
-    <div class="filters">
-      <select id="sf-name"><option value="">全部员工</option></select>
-      <span style="font-size:12px;color:#999;" id="sf-count"></span>
-    </div>
-    <div class="cards" id="staff-cards"></div>
-    <div class="chart-box" style="margin-bottom:18px;"><h3>各员工底稿：已完成 / 进行中 / 未开始</h3><div class="cc sm"><canvas id="c-staff"></canvas></div></div>
-    <div class="table-box"><table id="t-staff"><thead></thead><tbody></tbody></table></div>
-    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：BKD 列为空视为“未开始”；已填 BKD 视为“已开始”；标记“是否完成=Y”视为“已完成”。</p>
   </div>
 
   <!-- 函证 -->
   <div class="page" id="page-conf">
     <div class="print-title">函证进度</div>
     <div class="filters">
+      <select id="cf-proj"><option value="">全部项目</option></select>
       <select id="cf-mode"><option value="">全部</option><option value="unback">仅未收回</option><option value="unsent">仅未发出</option></select>
       <span style="font-size:12px;color:#999;" id="cf-count"></span>
       <input type="text" id="cf-kw" placeholder="搜索项目…" style="margin-left:auto;">
@@ -198,6 +190,19 @@ body.print-prep .page{display:block!important;}
     <div class="table-box"><table id="t-os"><thead></thead><tbody></tbody></table></div>
     <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：内部卡点＝需底稿交付中心(CSDC)解决的事项（OS_CSDC），应尽快处理；外部卡点＝需项目组或客户跟进的事项（OS_ET、OS_PBC、issue、提醒事项）。</p>
   </div>
+
+  <!-- 员工维度（放最后）-->
+  <div class="page" id="page-staff">
+    <div class="print-title">员工维度</div>
+    <div class="filters">
+      <select id="sf-name"><option value="">全部员工</option></select>
+      <span style="font-size:12px;color:#999;" id="sf-count"></span>
+    </div>
+    <div class="cards" id="staff-cards"></div>
+    <div class="chart-box" style="margin-bottom:18px;"><h3>各员工底稿：已完成 / 进行中 / 未开始</h3><div class="cc sm"><canvas id="c-staff"></canvas></div></div>
+    <div class="table-box"><table id="t-staff"><thead></thead><tbody></tbody></table></div>
+    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：BKD 列为空视为“未开始”；已填 BKD 视为“已开始”；标记“是否完成=Y”视为“已完成”。</p>
+  </div>
 </div>
 
 <footer>数据来源：你选择的 Excel · 全部在本地浏览器计算，数据不上传任何服务器</footer>
@@ -210,9 +215,49 @@ const TODAY=new Date();
 
 /* ===== 启动：查看者自动加载 data.js ===== */
 window.addEventListener('load',()=>{
-  if(typeof Chart!=='undefined'){Chart.defaults.animation=false;Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';}
+  if(typeof Chart!=='undefined'){
+    Chart.defaults.animation=false;
+    Chart.defaults.font.family='"Microsoft YaHei","Segoe UI",sans-serif';
+    Chart.register(valueLabelPlugin);
+  }
   loadSharedData();
 });
+
+/* 自定义插件：在柱/饼上显示数值与占比 */
+const valueLabelPlugin={
+  id:'valueLabel',
+  afterDatasetsDraw(chart,args,opts){
+    const ctx=chart.ctx;
+    const type=chart.config.type;
+    if(type==='doughnut'||type==='pie'){
+      const ds=chart.data.datasets[0];if(!ds)return;
+      const total=ds.data.reduce((a,b)=>a+(+b||0),0);if(!total)return;
+      const meta=chart.getDatasetMeta(0);
+      ctx.save();ctx.font='bold 12px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      meta.data.forEach((arc,i)=>{const v=+ds.data[i]||0;if(v<=0)return;
+        const pct=Math.round(v/total*100);if(pct<5)return;
+        const pos=arc.tooltipPosition();
+        ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=3;
+        const txt=v+' ('+pct+'%)';
+        ctx.strokeText(txt,pos.x,pos.y);ctx.fillText(txt,pos.x,pos.y);
+      });
+      ctx.restore();return;
+    }
+    // bar：在每段上显示数值；末段额外显示该行合计的百分比（仅堆叠百分比型不适用，这里只标数值）
+    const horizontal=chart.options.indexAxis==='y';
+    ctx.save();ctx.font='11px "Microsoft YaHei",sans-serif';ctx.fillStyle='#333';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
+      meta.data.forEach((el,i)=>{const v=+ds.data[i]||0;if(!v)return;
+        const p=el.tooltipPosition();
+        if(horizontal){ctx.textAlign='center';ctx.fillText(v,p.x,p.y);}
+        else{ctx.textAlign='center';ctx.fillText(v,p.x,p.y);}
+      });
+    });
+    ctx.restore();
+  }
+};
 function loadSharedData(){
   if(window.__DASHBOARD_DATA){
     DATA=window.__DASHBOARD_DATA.data;
@@ -235,7 +280,7 @@ $('pickBtn').onclick=pickFile;
 $('pdfBtn').onclick=exportAllPDF;
 function exportAllPDF(){
   if(!DATA){window.print();return;}
-  const tabs=['overview','project','staff','conf','os'];
+  const tabs=['overview','project','conf','os','staff'];
   // 1) 让所有页都可见，使每个 canvas 拿到真实尺寸
   document.body.classList.add('print-prep');
   // 2) 渲染每个维度的图表
@@ -309,7 +354,7 @@ function buildData(wb){
   const D=findTable(aoaDet,r=>r.includes('WP服务单')||r.includes('entity'));const gD=cellGetter(D.headers);
   const staff={};
   const sectionAgg={}; // 科目维度：以 section 前缀(C/E/G/K1...)聚合
-  const secKey=s=>{s=String(s).trim();const m=s.match(/^([A-Za-z]+\d*)[_\s]/);return m?m[1]:(s.split(/[_\s]/)[0]||s||'其他');};
+  const secKey=s=>{s=String(s).trim();const m=s.match(/^([A-Za-z]+\d*)[_\s]/);let k=m?m[1]:(s.split(/[_\s]/)[0]||s||'其他');if(/^U$/i.test(k)||/^U_?exp/i.test(s))k='Uexp';return k;};
   D.rows.forEach(r=>{const sn=String(gD(r,'WP服务单')).trim();const nm=String(gD(r,'项目')).trim();
     const entity=String(gD(r,'entity')).trim();if(!nm&&!entity)return;
     const key=projects[sn]?sn:(nameToSn[nm]||sn||nm);
@@ -377,11 +422,10 @@ function deliveryBucket(p){
 }
 function projStatus(p){
   if(p.wp===0||p.started===0)return{t:'未开始',c:'#999'};
-  if(rate(p.done,p.wp)>=100)return{t:'已完成',c:'var(--green)'};
-  const dd=daysTo(p.ddl1);
-  if(dd!==null&&dd<0)return{t:'已逾期',c:'var(--red)'};
-  if(dd!==null&&dd<=7)return{t:'临近DDL',c:'var(--orange)'};
-  return{t:'进行中',c:'var(--blue)'};
+  const b=deliveryBucket(p);
+  if(b==='final')return{t:'最终交付',c:'#2db84d'};
+  if(b==='first')return{t:'首次交付',c:'#7ed957'};
+  return{t:'进行中',c:'#4a90d9'};
 }
 function budgetAlert(p){ // 取最严重的一条
   if(p.budget<=0)return null;
@@ -422,21 +466,25 @@ function renderOverviewCards(){
   kpi([
     {l:'项目总数',v:P.length},
     {l:'进行中',v:doing,c:'blue'},
-    {l:'首次交付',v:first,c:'orange'},
-    {l:'整体交付',v:final,c:'green'},
+    {l:'首次交付',v:first,c:'lgreen'},
+    {l:'最终交付',v:final,c:'green'},
+  ],'ov-cards');
+  kpi([
     {l:'底稿完成率',v:rate(done,wp)+'%',c:'blue',sub:`${done}/${wp} 张`},
     {l:'预算使用率',v:rate(act,bud)+'%',c:act>bud?'red':'green',sub:`${act.toFixed(0)}/${bud.toFixed(0)} h`},
     {l:'超支项目',v:over.length,c:over.length?'red':'green'},
     {l:'函证未发出',v:cUnsent,c:cUnsent?'red':'green'},
     {l:'函证未收回',v:cUn,c:cUn?'red':'green',sub:`回收率 ${rate(cBack,cGen)}%`},
     {l:'OS 未解决',v:osOpen,c:osOpen?'purple':'green',sub:`内部卡点 ${osInternalOpen}`},
-  ],'ov-cards');
+  ],'ov-cards2');
 
   const alerts=[];
   P.forEach(p=>{const b=budgetAlert(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.tag,msg:b.msg});
-    const st=projStatus(p);const dd=daysTo(p.ddl1);
-    if(st.t==='已逾期')alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首交DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
-    else if(st.t==='临近DDL')alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首交 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
+    // 逾期/临近DDL：尚未最终交付且接近或超过首次交付DDL
+    if(deliveryBucket(p)!=='final'&&p.started>0){const dd=daysTo(p.ddl1);
+      if(dd!==null&&dd<0)alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首交DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
+      else if(dd!==null&&dd<=7)alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首交 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
+    }
   });
   const osInt={},osExt={};
   DATA.oslist.filter(o=>!o.solved).forEach(o=>{if(o.kind==='internal')osInt[o.name]=(osInt[o.name]||0)+1;else osExt[o.name]=(osExt[o.name]||0)+1;});
@@ -465,28 +513,19 @@ function drawProjectTable(){
   _projRows=rows;
   $('pf-count').textContent='共 '+rows.length+' 个项目';
   const thead=`<tr>
-    <th rowspan="2">项目</th><th rowspan="2">类型</th><th rowspan="2">状态</th>
-    <th colspan="3" class="group-th">预算使用（工时h）</th>
-    <th colspan="1" class="group-th">函证</th>
+    <th rowspan="2">项目</th><th rowspan="2">类型</th><th rowspan="2">状态</th><th rowspan="2" class="cell-c">函证<br>已收/生成</th>
     <th colspan="5" class="group-th">底稿进度（已达 / 总数）</th>
     <th rowspan="2" class="cell-c">OS</th></tr>
-    <tr><th class="cell-c">预算</th><th class="cell-c">实际</th><th class="cell-c">使用率</th>
-    <th class="cell-c">已收/生成</th>
-    <th class="cell-c">是否完成</th><th class="cell-c">FIC复核</th><th class="cell-c">EIC复核</th><th class="cell-c">首次交付</th><th class="cell-c">最终交付</th></tr>`;
+    <tr><th class="cell-c">是否完成</th><th class="cell-c">FIC复核</th><th class="cell-c">EIC复核</th><th class="cell-c">首次交付</th><th class="cell-c">最终交付</th></tr>`;
   $('t-project').querySelector('thead').innerHTML=thead;
   const f=(a,b)=>`<span class="frac">${a}/${b}</span>`;
   $('t-project').querySelector('tbody').innerHTML=rows.map(p=>{
     const stt=projStatus(p);
-    const use=p.budget>0?rate(p.actual,p.budget):null;
-    const useTxt=use===null?'—':`<span class="${p.actual>p.budget?'over':(use>=70?'':'under')}">${use}%</span>`;
     const cf=DATA.confByName[cfKey(p.name)];
     const cfTxt=cf?`${cf.back}/${cf.gen}${cf.unback>0?' <span class=over>(欠'+cf.unback+')</span>':''}`:'—';
     return `<tr>
       <td><b>${p.name}</b></td><td>${p.type}</td>
       <td><span class="pill" style="background:${stt.c}">${stt.t}</span></td>
-      <td class="cell-c">${p.budget?p.budget.toFixed(0):'—'}</td>
-      <td class="cell-c">${p.budget?(p.actual>p.budget?'<span class=over>'+p.actual.toFixed(0)+'</span>':p.actual.toFixed(0)):'—'}</td>
-      <td class="cell-c">${useTxt}</td>
       <td class="cell-c">${cfTxt}</td>
       <td class="cell-c">${f(p.done,p.wp)}</td>
       <td class="cell-c">${f(p.fic_r,p.wp)}</td>
@@ -498,15 +537,21 @@ function drawProjectTable(){
   if(currentTab==='project')drawProjectCharts();
 }
 function drawProjectCharts(){
-  const rows=_projRows;if(!rows.length){destroy('c-projwp');destroy('c-projbud');return;}
+  const rows=_projRows;if(!rows.length){destroy('c-projwp');destroy('c-review');destroy('c-section');return;}
   bar('c-projwp',{labels:rows.map(p=>p.name),datasets:[
     {label:'已完成',data:rows.map(p=>p.done),backgroundColor:'#2db84d',stack:'a'},
     {label:'未完成',data:rows.map(p=>p.wp-p.done),backgroundColor:'#e3e3e8',stack:'a'}]},
     {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}});
-  const bp=rows.filter(p=>p.budget>0);
-  bar('c-projbud',{labels:bp.map(p=>p.name),datasets:[{label:'使用率%',data:bp.map(p=>rate(p.actual,p.budget)),
-    backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':(rate(p.actual,p.budget)>=90?'#f5a623':'#4a90d9'))}]},
-    {indexAxis:'y',plugins:{legend:{display:false}}});
+  // 待复核统计（饼）：已完成但未FIC复核=待FIC；已FIC未EIC=待EIC；已EIC=已复核
+  let waitFic=0,waitEic=0,reviewed=0;
+  rows.forEach(p=>{waitFic+=Math.max(0,p.done-p.fic_r);waitEic+=Math.max(0,p.fic_r-p.eic_r);reviewed+=p.eic_r;});
+  pie('c-review',['待FIC复核','待EIC复核','已EIC复核'],[waitFic,waitEic,reviewed],['#f5a623','#4a90d9','#2db84d']);
+  // 各科目完成情况（堆叠条）
+  const sec=(DATA.section||[]).slice(0,16);
+  bar('c-section',{labels:sec.map(s=>s.section),datasets:[
+    {label:'已完成',data:sec.map(s=>s.done),backgroundColor:'#2db84d',stack:'a'},
+    {label:'未完成',data:sec.map(s=>s.wp-s.done),backgroundColor:'#e3e3e8',stack:'a'}]},
+    {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}});
 }
 
 /* ----- 员工维度 ----- */
@@ -534,19 +579,21 @@ function renderStaff(){
 
 /* ----- 函证 ----- */
 function renderConf(){
-  ['cf-kw','cf-mode'].forEach(id=>$(id).oninput=drawConf);
+  if(!$('cf-proj').dataset.init){fillSel('cf-proj',[...new Set(DATA.conf.map(c=>c.name).filter(Boolean))]);$('cf-proj').dataset.init='1';}
+  ['cf-kw','cf-mode','cf-proj'].forEach(id=>$(id).oninput=drawConf);
   drawConf();
 }
 let _confRows=[];
 function drawConf(){
-  const kw=$('cf-kw').value.trim(),mode=$('cf-mode').value;
-  let C=DATA.conf.filter(x=>(!kw||(x.name||'').includes(kw))&&(mode!=='unback'||x.unback>0)&&(mode!=='unsent'||x.unsent>0));
+  const kw=$('cf-kw').value.trim(),mode=$('cf-mode').value,pj=$('cf-proj').value;
+  let C=DATA.conf.filter(x=>(!pj||x.name===pj)&&(!kw||(x.name||'').includes(kw))&&(mode!=='unback'||x.unback>0)&&(mode!=='unsent'||x.unsent>0));
   _confRows=C;
   const all=DATA.conf;
   const gen=all.reduce((s,x)=>s+x.gen,0),sent=all.reduce((s,x)=>s+x.sent,0),back=all.reduce((s,x)=>s+x.back,0),unback=all.reduce((s,x)=>s+x.unback,0),unsent=all.reduce((s,x)=>s+x.unsent,0);
   const elec=all.reduce((s,x)=>s+(x.elec||0),0),paper=all.reduce((s,x)=>s+(x.paper||0),0);
   kpi([{l:'合计生成',v:gen},{l:'已发出',v:sent,c:'blue'},{l:'未发出',v:unsent,c:unsent?'red':'green'},
-    {l:'已收回',v:back,c:'green'},{l:'未收回',v:unback,c:unback?'red':'green'},
+    {l:'已收回',v:back,c:'green'},
+    {l:'未收回',v:unback,c:unback?'red':'green',sub:unback>0?'其中1封已做替代测试':''},
     {l:'回收率',v:rate(back,gen)+'%',c:'blue'},
     {l:'电子函证占比',v:rate(elec,elec+paper)+'%',c:'green',sub:`电子 ${elec} / 纸质 ${paper}`}],'conf-cards');
   $('cf-count').textContent='共 '+C.length+' 行';
@@ -561,9 +608,21 @@ function drawConf(){
 }
 function drawConfChart(){
   const t=DATA.confTypes||{};
-  const labels=Object.keys(t).filter(k=>t[k]>0);
-  pie('c-conftype',labels,labels.map(k=>t[k]),
-    labels.map(k=>/电子|confirmation/i.test(k)?(k.includes('一')?'#2db84d':k.includes('二')?'#7ed957':'#1d8f3a'):(/HK17/.test(k)?'#8e6fd6':(k.includes('一')?'#f5a623':'#f7c873'))));
+  // 明细类型（外圈）：归类到 电子/纸质 并配色
+  const detail=[
+    {k:'电子格式一',v:t['电子格式一']||0,grp:'电子',c:'#1d8f3a'},
+    {k:'电子格式二',v:t['电子格式二']||0,grp:'电子',c:'#2db84d'},
+    {k:'confirmation平台',v:t['confirmation平台']||0,grp:'电子',c:'#7ed957'},
+    {k:'纸质格式一',v:t['纸质格式一']||0,grp:'纸质',c:'#c77f10'},
+    {k:'纸质格式二',v:t['纸质格式二']||0,grp:'纸质',c:'#f5a623'},
+    {k:'HK17(纸质)',v:t['HK17']||0,grp:'纸质',c:'#f7c873'},
+  ].filter(d=>d.v>0);
+  const elec=detail.filter(d=>d.grp==='电子').reduce((s,d)=>s+d.v,0);
+  const paper=detail.filter(d=>d.grp==='纸质').reduce((s,d)=>s+d.v,0);
+  // 双环：内圈=电子/纸质汇总，外圈=明细类型
+  doubleDonut('c-conftype',
+    {labels:['电子','纸质'],data:[elec,paper],colors:['#2db84d','#f5a623']},
+    {labels:detail.map(d=>d.k),data:detail.map(d=>d.v),colors:detail.map(d=>d.c)});
   const C=_confRows.length?_confRows:DATA.conf;
   bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
     {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
@@ -621,22 +680,16 @@ function renderCharts(tab){
     const P=DATA.projects;
     // 项目交付状态分布（饼）
     const first=P.filter(p=>deliveryBucket(p)==='first').length,final=P.filter(p=>deliveryBucket(p)==='final').length,doing=P.length-first-final;
-    pie('c-delivery',['进行中','首次交付','整体交付'],[doing,first,final],['#4a90d9','#f5a623','#2db84d']);
+    pie('c-delivery',['进行中','首次交付','最终交付'],[doing,first,final],['#4a90d9','#7ed957','#2db84d']);
     // 项目类型分布（饼）
     const byType={};P.forEach(p=>byType[p.type]=(byType[p.type]||0)+1);
     const tk=Object.keys(byType);
     pie('c-type',tk,tk.map(k=>byType[k]),['#2e2e38','#ffe600','#4a90d9','#2db84d','#f5a623','#8e6fd6','#e0383e','#9aa0a6']);
-    // 各科目(section)底稿完成情况（堆叠条）
-    const sec=(DATA.section||[]).slice(0,16);
-    bar('c-section',{labels:sec.map(s=>s.section),datasets:[
-      {label:'已完成',data:sec.map(s=>s.done),backgroundColor:'#2db84d',stack:'a'},
-      {label:'未完成',data:sec.map(s=>s.wp-s.done),backgroundColor:'#e3e3e8',stack:'a'}]},
-      {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}});
-    // 预算 vs 实际
+    // 预算 vs 实际（未超支=绿色，超支=红色）
     const bp=P.filter(p=>p.budget>0);
     bar('c-budget',{labels:bp.map(p=>p.name),datasets:[
       {label:'预算',data:bp.map(p=>p.budget),backgroundColor:'#cfcfd6'},
-      {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#ffe600')}]},
+      {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#2db84d')}]},
       {indexAxis:'y'});
   }else if(tab==='project'){drawProjectCharts();}
   else if(tab==='staff'){
@@ -657,6 +710,18 @@ function bar(id,data,opts){destroy(id);
   (data.datasets||[]).forEach(ds=>{if(ds.maxBarThickness==null)ds.maxBarThickness=40;});
   charts[id]=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.7,barPercentage:0.85},baseOpts,opts)});}
 function pie(id,labels,data,colors){destroy(id);charts[id]=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});}
+function doubleDonut(id,inner,outer){destroy(id);
+  charts[id]=new Chart($(id),{type:'doughnut',
+    data:{labels:outer.labels,datasets:[
+      {label:'明细',data:outer.data,backgroundColor:outer.colors,weight:1},
+      {label:'汇总',data:inner.data,backgroundColor:inner.colors,weight:0.6,
+       // 用第二个 dataset 自带的 labels 供图例/提示
+       _labels:inner.labels}
+    ]},
+    options:Object.assign({},baseOpts,{cutout:'30%',
+      plugins:{legend:{position:'bottom'},
+        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} (${Math.round(c.parsed/tot*100)}%)`;}}}}})});
+}
 </script>
 </body>
 </html>
