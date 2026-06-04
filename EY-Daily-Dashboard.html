@@ -224,6 +224,7 @@ window.addEventListener('load',()=>{
 });
 
 /* 自定义插件：在柱/饼上显示数值与占比 */
+const fmtNum=v=>Number.isInteger(v)?v:Math.round(v);
 const valueLabelPlugin={
   id:'valueLabel',
   afterDatasetsDraw(chart){
@@ -231,48 +232,58 @@ const valueLabelPlugin={
     const ctx=chart.ctx;
     const type=chart.config.type;
     if(type==='doughnut'||type==='pie'){
-      // 多环：默认仅最内圈(最后一个 dataset)放小字；可被 cfg.ringLabel 控制
       const dsList=chart.data.datasets;
       dsList.forEach((ds,di)=>{
-        if(cfg.ringLabel && !cfg.ringLabel.includes(di))return;   // 指定了哪些圈放标签
-        if(!cfg.ringLabel && di!==0)return;                        // 默认只给第0个(单环)放
+        if(cfg.ringLabel){ if(!cfg.ringLabel.includes(di))return; }   // 指定圈才放标签
+        else if(di!==0)return;                                        // 默认只给第0个(单环)放
         const total=ds.data.reduce((a,b)=>a+(+b||0),0);if(!total)return;
         const meta=chart.getDatasetMeta(di);
-        const fs=cfg.pieFont||11;
-        ctx.save();ctx.font=fs+'px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+        const fs=cfg.pieFont||12;
+        ctx.save();ctx.font='bold '+fs+'px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
         meta.data.forEach((arc,i)=>{const v=+ds.data[i]||0;if(v<=0)return;
           const pct=Math.round(v/total*100);if(pct<6)return;
           const pos=arc.tooltipPosition();
-          ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=2.5;
-          const txt=v+' / '+pct+'%';
-          ctx.strokeText(txt,pos.x,pos.y);ctx.fillStyle='#fff';ctx.fillText(txt,pos.x,pos.y);
+          const txt=cfg.valueOnly?(v+''):(v+' / '+pct+'%');
+          // 白色描边 + 深色字，任何底色都清晰
+          ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';
+          ctx.strokeText(txt,pos.x,pos.y);
+          ctx.fillStyle='#2e2e38';ctx.fillText(txt,pos.x,pos.y);
         });
         ctx.restore();
       });
       return;
     }
-    // bar：数值显示在柱的外侧（柱顶/末端上方），不压在柱子上
+    // bar：数值统一显示在柱“外侧”（横向=右侧，纵向=上方），深蓝字+白描边，不压在柱上
     const horizontal=chart.options.indexAxis==='y';
-    const stacked=chart.options.scales&&chart.options.scales.x&&chart.options.scales.x.stacked;
-    const LABEL='#2c5d8f';                      // 标签颜色（深蓝，区别于柱色，清晰不刺眼）
-    const fmt=v=>Number.isInteger(v)?v:Math.round(v);
-    ctx.save();ctx.font='bold 10px "Microsoft YaHei",sans-serif';
-    chart.data.datasets.forEach((ds,di)=>{
-      const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
-      meta.data.forEach((el,i)=>{const v=+ds.data[i]||0;if(!v)return;
-        if(stacked){ // 堆叠：标在每段中间（段内白字），最清晰
-          const p=el.tooltipPosition();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
-          ctx.fillText(fmt(v),p.x,p.y);
-        }else if(horizontal){ // 非堆叠横向：标在柱末端“上方”，浮于白底
-          const h=el.height||10;
-          ctx.fillStyle=LABEL;ctx.textAlign='right';ctx.textBaseline='bottom';
-          ctx.fillText(fmt(v),el.x,el.y-h/2-1);
-        }else{ // 非堆叠纵向：标在柱顶上方
-          ctx.fillStyle=LABEL;ctx.textAlign='center';ctx.textBaseline='bottom';
-          ctx.fillText(fmt(v),el.x,el.y-4);
-        }
+    const stacked=!!(chart.options.scales&&((chart.options.scales.x&&chart.options.scales.x.stacked)||(chart.options.scales.y&&chart.options.scales.y.stacked)));
+    const LABEL='#2c5d8f';
+    ctx.save();ctx.font='bold 11px "Microsoft YaHei",sans-serif';
+    if(stacked){
+      // 堆叠：在整条的末端外侧显示该条总计（避免段内白字看不清）
+      const nCat=chart.data.labels.length;
+      for(let i=0;i<nCat;i++){
+        let total=0,lastEl=null;
+        chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
+          const v=+ds.data[i]||0;total+=v;const el=meta.data[i];if(el)lastEl=el;});
+        if(!total||!lastEl)continue;
+        ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.fillStyle=LABEL;
+        if(horizontal){ctx.textAlign='left';ctx.textBaseline='middle';
+          ctx.strokeText(fmtNum(total),lastEl.x+5,lastEl.y);ctx.fillText(fmtNum(total),lastEl.x+5,lastEl.y);}
+        else{ctx.textAlign='center';ctx.textBaseline='bottom';
+          ctx.strokeText(fmtNum(total),lastEl.x,lastEl.y-4);ctx.fillText(fmtNum(total),lastEl.x,lastEl.y-4);}
+      }
+    }else{
+      chart.data.datasets.forEach((ds,di)=>{
+        const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
+        meta.data.forEach((el,i)=>{const v=+ds.data[i]||0;if(!v)return;
+          ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.fillStyle=LABEL;
+          if(horizontal){ctx.textAlign='left';ctx.textBaseline='middle';
+            ctx.strokeText(fmtNum(v),el.x+5,el.y);ctx.fillText(fmtNum(v),el.x+5,el.y);}
+          else{ctx.textAlign='center';ctx.textBaseline='bottom';
+            ctx.strokeText(fmtNum(v),el.x,el.y-4);ctx.fillText(fmtNum(v),el.x,el.y-4);}
+        });
       });
-    });
+    }
     ctx.restore();
   }
 };
@@ -728,7 +739,9 @@ function bar(id,data,opts,labelCfg){destroy(id);
   const maxbt=(opts&&opts.maxBarThickness)||40;
   (data.datasets||[]).forEach(ds=>{if(ds.maxBarThickness==null)ds.maxBarThickness=maxbt;});
   if(opts)delete opts.maxBarThickness;
-  const c=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.8,barPercentage:0.9},baseOpts,opts)});
+  const horizontal=opts&&opts.indexAxis==='y';
+  const pad=horizontal?{right:42}:{top:20};
+  const c=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.8,barPercentage:0.9,layout:{padding:pad}},baseOpts,opts)});
   c.$labels=labelCfg||{};charts[id]=c;}
 function pie(id,labels,data,colors,labelCfg){destroy(id);
   const c=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});
@@ -743,7 +756,7 @@ function doubleDonut(id,inner,outer){destroy(id);
       plugins:{legend:{position:'bottom'},
         tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
   // 外圈(dataset 0)不放数字，仅内圈(dataset 1)放小字
-  c.$labels={ringLabel:[1],pieFont:10};
+  c.$labels={ringLabel:[1],pieFont:11,valueOnly:false};
   charts[id]=c;}
 </script>
 </body>
