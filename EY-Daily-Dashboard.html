@@ -17,7 +17,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:"Microsoft YaHei","Segoe UI",sans-serif;background:var(--ey-gray);color:var(--ey-black);}
 header{background:var(--ey-black);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:14px;}
-header .logo{display:flex;align-items:center;}
+header .logo{background:var(--ey-yellow);color:var(--ey-black);font-weight:800;padding:4px 10px;border-radius:3px;font-size:18px;}
 header h1{font-size:17px;font-weight:600;}
 header .sub{font-size:12px;color:#bdbdc7;}
 .toolbar{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;}
@@ -30,7 +30,7 @@ header .sub{font-size:12px;color:#bdbdc7;}
 .tabs{display:flex;gap:2px;background:#fff;padding:0 24px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;}
 .tabs button{background:none;border:none;padding:13px 20px;font-size:14px;font-weight:600;color:#888;cursor:pointer;border-bottom:3px solid transparent;}
 .tabs button.active{color:var(--ey-black);border-bottom-color:var(--ey-yellow);}
-.wrap{padding:18px 24px;max-width:1500px;margin:0 auto;}
+.wrap{padding:18px 24px;max-width:1360px;margin:0 auto;}
 .page{display:none;}.page.active{display:block;}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:13px;margin-bottom:18px;}
 .card{background:#fff;border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:3px solid var(--ey-yellow);}
@@ -91,14 +91,7 @@ body.print-prep .page{display:block!important;}
 </head>
 <body>
 <header>
-  <span class="logo" title="EY">
-    <svg width="56" height="40" viewBox="0 0 118 80" xmlns="http://www.w3.org/2000/svg" aria-label="EY">
-      <text x="0" y="60" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="60" fill="#ffffff">EY</text>
-      <polygon points="118,2 72,28 118,28" fill="#ffe600"/>
-      <polygon points="118,33 62,55 118,55" fill="#ffe600"/>
-      <polygon points="118,60 52,80 118,80" fill="#ffe600"/>
-    </svg>
-  </span>
+  <span class="logo">EY</span>
   <div><h1>Daily Management 看板</h1><div class="sub">底稿交付中心 · 进度 / 函证 / OS / 预算管控</div></div>
   <div class="toolbar">
     <span id="lastUpdate" style="color:#bdbdc7"></span>
@@ -132,7 +125,11 @@ body.print-prep .page{display:block!important;}
     <div class="cards" id="ov-cards"></div>
     <div class="panel"><h3>⚠ 预警事项</h3><div id="ov-alerts"></div></div>
     <div class="charts">
-      <div class="chart-box"><h3>各项目底稿完成情况（已完成 / 总数）</h3><div class="cc tall"><canvas id="c-proj"></canvas></div></div>
+      <div class="chart-box"><h3>项目交付状态分布</h3><div class="cc"><canvas id="c-delivery"></canvas></div></div>
+      <div class="chart-box"><h3>项目类型分布</h3><div class="cc"><canvas id="c-type"></canvas></div></div>
+    </div>
+    <div class="charts">
+      <div class="chart-box"><h3>各科目(section)底稿完成情况</h3><div class="cc tall"><canvas id="c-section"></canvas></div></div>
       <div class="chart-box"><h3>预算 vs 实际工时（超支标红）</h3><div class="cc tall"><canvas id="c-budget"></canvas></div></div>
     </div>
   </div>
@@ -171,12 +168,15 @@ body.print-prep .page{display:block!important;}
   <div class="page" id="page-conf">
     <div class="print-title">函证进度</div>
     <div class="filters">
-      <input type="text" id="cf-kw" placeholder="搜索项目…">
       <select id="cf-mode"><option value="">全部</option><option value="unback">仅未收回</option><option value="unsent">仅未发出</option></select>
       <span style="font-size:12px;color:#999;" id="cf-count"></span>
+      <input type="text" id="cf-kw" placeholder="搜索项目…" style="margin-left:auto;">
     </div>
     <div class="cards" id="conf-cards"></div>
-    <div class="chart-box" style="margin-bottom:18px;"><h3>各项目函证：已收回 / 未收回</h3><div class="cc sm"><canvas id="c-conf"></canvas></div></div>
+    <div class="charts">
+      <div class="chart-box"><h3>函证类型数量及占比（电子 vs 纸质）</h3><div class="cc sm"><canvas id="c-conftype"></canvas></div></div>
+      <div class="chart-box"><h3>各项目函证：已收回 / 未收回</h3><div class="cc sm"><canvas id="c-conf"></canvas></div></div>
+    </div>
     <div class="table-box"><table id="t-conf"><thead></thead><tbody></tbody></table></div>
   </div>
 
@@ -184,6 +184,7 @@ body.print-prep .page{display:block!important;}
   <div class="page" id="page-os">
     <div class="print-title">OS 进度</div>
     <div class="filters">
+      <select id="of-kind"><option value="">全部卡点</option><option value="internal">内部卡点(CSDC)</option><option value="external">外部卡点(项目组/客户)</option></select>
       <select id="of-proj"><option value="">全部项目</option></select>
       <select id="of-cls"><option value="">全部分类</option></select>
       <select id="of-status"><option value="">全部状态</option><option value="open">未解决</option><option value="solved">已解决</option></select>
@@ -191,10 +192,11 @@ body.print-prep .page{display:block!important;}
     </div>
     <div class="cards" id="os-cards"></div>
     <div class="charts">
-      <div class="chart-box"><h3>OS 按项目</h3><div class="cc sm"><canvas id="c-osproj"></canvas></div></div>
-      <div class="chart-box"><h3>OS 解决状态</h3><div class="cc sm"><canvas id="c-osstat"></canvas></div></div>
+      <div class="chart-box"><h3>内部 vs 外部卡点（未解决）</h3><div class="cc sm"><canvas id="c-oskind"></canvas></div></div>
+      <div class="chart-box"><h3>OS 分类分布</h3><div class="cc sm"><canvas id="c-oscls"></canvas></div></div>
     </div>
     <div class="table-box"><table id="t-os"><thead></thead><tbody></tbody></table></div>
+    <p class="hint" style="font-size:12px;color:#aaa;margin-top:8px;">说明：内部卡点＝需底稿交付中心(CSDC)解决的事项（OS_CSDC、issue），应尽快处理；外部卡点＝需项目组或客户跟进的事项（OS_ET、OS_PBC、提醒事项）。</p>
   </div>
 </div>
 
@@ -306,10 +308,12 @@ function buildData(wb){
 
   const D=findTable(aoaDet,r=>r.includes('WP服务单')||r.includes('entity'));const gD=cellGetter(D.headers);
   const staff={};
+  const sectionAgg={}; // 科目维度：以 section 前缀(C/E/G/K1...)聚合
+  const secKey=s=>{s=String(s).trim();const m=s.match(/^([A-Za-z]+\d*)[_\s]/);return m?m[1]:(s.split(/[_\s]/)[0]||s||'其他');};
   D.rows.forEach(r=>{const sn=String(gD(r,'WP服务单')).trim();const nm=String(gD(r,'项目')).trim();
     const entity=String(gD(r,'entity')).trim();if(!nm&&!entity)return;
     const key=projects[sn]?sn:(nameToSn[nm]||sn||nm);
-    const rec={name:nm,owner:String(gD(r,'负责人')).trim()||'未分配',
+    const rec={name:nm,owner:String(gD(r,'负责人')).trim()||'未分配',section:String(gD(r,'section')).trim(),
       started:has(gD(r,'BKD')),done:Y(gD(r,'是否完成')),fic:Y(gD(r,'FIC复核')),eic:Y(gD(r,'EIC复核')),
       deliv1:Y(gD(r,'首次交付')),deliv2:Y(gD(r,'最终交付')),os:String(gD(r,'OS事项')).trim()};
     let p=projects[key];if(!p){p=projects[key]={sn:key,name:nm,type:'未分类',ddl1:null,ddl2:null,budget:0,actual:0,wp:0,started:0,done:0,fic_r:0,eic_r:0,deliv1:0,deliv2:0,os:0};nameToSn[nm]=key;}
@@ -319,28 +323,40 @@ function buildData(wb){
     const s=staff[rec.owner]||(staff[rec.owner]={owner:rec.owner,wp:0,started:0,done:0,fic:0,eic:0,os:0,_projs:new Set()});
     s.wp++;if(rec.started)s.started++;if(rec.done)s.done++;if(rec.fic)s.fic++;if(rec.eic)s.eic++;
     if(rec.os&&rec.os!=='无')s.os++;if(rec.name)s._projs.add(rec.name);
+    if(rec.section){const sk=secKey(rec.section);const sg=sectionAgg[sk]||(sectionAgg[sk]={section:sk,wp:0,done:0});sg.wp++;if(rec.done)sg.done++;}
   });
   Object.values(projects).forEach(p=>{const b=budgetBySn[p.sn];if(b){p.budget=b.budget;p.actual=b.actual;}});
   const staffArr=Object.values(staff).map(s=>({owner:s.owner,wp:s.wp,started:s.started,done:s.done,fic:s.fic,eic:s.eic,os:s.os,projN:s._projs.size}));
+  const sectionArr=Object.values(sectionAgg).sort((a,b)=>b.wp-a.wp);
 
   const C=findTable(aoaConf,r=>r.includes('服务单号')&&(r.includes('已收回')||r.includes('合计生成')));const gC=cellGetter(C.headers);
   const conf=[];
+  // 函证类型：电子(电子格式一/二 + confirmation平台) vs 纸质(纸质格式一/二) vs HK17
+  const confTypes={'电子格式一':0,'电子格式二':0,'confirmation平台':0,'纸质格式一':0,'纸质格式二':0,'HK17':0};
   C.rows.forEach(r=>{const sn=String(gC(r,'服务单号')).trim();const nm=String(gC(r,'项目')).trim();
     if(!sn||!/EDC/i.test(sn))return;
+    const e1=numv(gC(r,'电子格式一')),e2=numv(gC(r,'电子格式二')),cfm=numv(gC(r,'confirmation')),
+      p1=numv(gC(r,'纸质格式一')),p2=numv(gC(r,'纸质格式二')),hk=numv(gC(r,'HK17'));
+    confTypes['电子格式一']+=e1;confTypes['电子格式二']+=e2;confTypes['confirmation平台']+=cfm;
+    confTypes['纸质格式一']+=p1;confTypes['纸质格式二']+=p2;confTypes['HK17']+=hk;
     conf.push({sn,name:nm,gen:numv(gC(r,'合计生成')),sent:numv(gC(r,'已发出')),unsent:numv(gC(r,'未发出')),
-      back:numv(gC(r,'已收回')),unback:numv(gC(r,'未收回')),owner:String(gC(r,'负责人')).trim(),note:String(gC(r,'备注')).trim()});});
+      back:numv(gC(r,'已收回')),unback:numv(gC(r,'未收回')),owner:String(gC(r,'负责人')).trim(),note:String(gC(r,'备注')).trim(),
+      elec:e1+e2+cfm,paper:p1+p2});});
   const confByName={};conf.forEach(c=>{const k=(c.name||'').replace(/[-—].*/,'').trim();
     const t=confByName[k]||(confByName[k]={gen:0,sent:0,unsent:0,back:0,unback:0});t.gen+=c.gen;t.sent+=c.sent;t.unsent+=c.unsent;t.back+=c.back;t.unback+=c.unback;});
 
   const O=findTable(aoaOS,r=>r.includes('OS事项')&&(r.includes('序号')||r.includes('事项分类')));const gO=cellGetter(O.headers);
   const oslist=[];
+  // 内部卡点：需 CSDC(底稿交付中心)解决的（OS_CSDC、issue）；外部卡点：需项目组/客户解决（OS_ET、OS_PBC、提醒事项）
+  const isInternal=cls=>/CSDC|issue/i.test(cls);
   O.rows.forEach(r=>{const nm=String(gO(r,'项目')).trim();const item=String(gO(r,'OS事项')).trim();
     if(!item)return;
+    const cls=String(gO(r,'事项分类')).trim()||'未分类';
     oslist.push({name:nm,entity:String(gO(r,'Entity')).trim(),subj:String(gO(r,'科目')).trim(),item,
-      cls:String(gO(r,'事项分类')).trim()||'未分类',raise:ms(gO(r,'提出时间')),
+      cls,kind:isInternal(cls)?'internal':'external',raise:ms(gO(r,'提出时间')),
       owner:String(gO(r,'CSDC负责人')).trim(),solved:Y(gO(r,'是否解决')),note:String(gO(r,'备注')).trim()});});
 
-  return {projects:Object.values(projects).filter(p=>p.name),staff:staffArr,conf,confByName,oslist};
+  return {projects:Object.values(projects).filter(p=>p.name),staff:staffArr,section:sectionArr,conf,confByName,confTypes,oslist};
 }
 function applyData(fromExcel){
   hideBanner();$('tabs').style.display='flex';$('emptyState').style.display='none';
@@ -398,7 +414,8 @@ function renderOverviewCards(){
   const bud=P.reduce((s,p)=>s+p.budget,0),act=P.reduce((s,p)=>s+p.actual,0);
   const over=P.filter(p=>p.budget>0&&p.actual>p.budget);
   const osOpen=DATA.oslist.filter(o=>!o.solved).length;
-  const cBack=DATA.conf.reduce((s,c)=>s+c.back,0),cGen=DATA.conf.reduce((s,c)=>s+c.gen,0),cUn=DATA.conf.reduce((s,c)=>s+c.unback,0);
+  const osInternalOpen=DATA.oslist.filter(o=>!o.solved&&o.kind==='internal').length;
+  const cBack=DATA.conf.reduce((s,c)=>s+c.back,0),cGen=DATA.conf.reduce((s,c)=>s+c.gen,0),cUn=DATA.conf.reduce((s,c)=>s+c.unback,0),cUnsent=DATA.conf.reduce((s,c)=>s+c.unsent,0);
   const first=P.filter(p=>deliveryBucket(p)==='first').length;
   const final=P.filter(p=>deliveryBucket(p)==='final').length;
   const doing=P.length-first-final;
@@ -410,8 +427,9 @@ function renderOverviewCards(){
     {l:'底稿完成率',v:rate(done,wp)+'%',c:'blue',sub:`${done}/${wp} 张`},
     {l:'预算使用率',v:rate(act,bud)+'%',c:act>bud?'red':'green',sub:`${act.toFixed(0)}/${bud.toFixed(0)} h`},
     {l:'超支项目',v:over.length,c:over.length?'red':'green'},
+    {l:'函证未发出',v:cUnsent,c:cUnsent?'red':'green'},
     {l:'函证未收回',v:cUn,c:cUn?'red':'green',sub:`回收率 ${rate(cBack,cGen)}%`},
-    {l:'OS 未解决',v:osOpen,c:osOpen?'purple':'green'},
+    {l:'OS 未解决',v:osOpen,c:osOpen?'purple':'green',sub:`内部卡点 ${osInternalOpen}`},
   ],'ov-cards');
 
   const alerts=[];
@@ -420,8 +438,10 @@ function renderOverviewCards(){
     if(st.t==='已逾期')alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首交DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
     else if(st.t==='临近DDL')alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首交 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
   });
-  const osByProj={};DATA.oslist.filter(o=>!o.solved).forEach(o=>osByProj[o.name]=(osByProj[o.name]||0)+1);
-  Object.entries(osByProj).forEach(([nm,n])=>alerts.push({lv:'info',proj:nm,tag:'OS未解决',msg:`${n} 项待处理`}));
+  const osInt={},osExt={};
+  DATA.oslist.filter(o=>!o.solved).forEach(o=>{if(o.kind==='internal')osInt[o.name]=(osInt[o.name]||0)+1;else osExt[o.name]=(osExt[o.name]||0)+1;});
+  Object.entries(osInt).forEach(([nm,n])=>alerts.push({lv:'crit',proj:nm,tag:'内部卡点',msg:`${n} 项需 CSDC 尽快解决`}));
+  Object.entries(osExt).forEach(([nm,n])=>alerts.push({lv:'info',proj:nm,tag:'外部卡点',msg:`${n} 项待项目组/客户跟进`}));
   const unsent={},unback={};
   DATA.conf.forEach(c=>{if(c.unsent>0)unsent[c.name]=(unsent[c.name]||0)+c.unsent;if(c.unback>0)unback[c.name]=(unback[c.name]||0)+c.unback;});
   Object.entries(unsent).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未发',msg:`${n} 份未发出`}));
@@ -524,19 +544,26 @@ function drawConf(){
   _confRows=C;
   const all=DATA.conf;
   const gen=all.reduce((s,x)=>s+x.gen,0),sent=all.reduce((s,x)=>s+x.sent,0),back=all.reduce((s,x)=>s+x.back,0),unback=all.reduce((s,x)=>s+x.unback,0),unsent=all.reduce((s,x)=>s+x.unsent,0);
+  const elec=all.reduce((s,x)=>s+(x.elec||0),0),paper=all.reduce((s,x)=>s+(x.paper||0),0);
   kpi([{l:'合计生成',v:gen},{l:'已发出',v:sent,c:'blue'},{l:'未发出',v:unsent,c:unsent?'red':'green'},
-    {l:'已收回',v:back,c:'green'},{l:'未收回',v:unback,c:unback?'red':'green'},{l:'回收率',v:rate(back,gen)+'%',c:'blue'}],'conf-cards');
+    {l:'已收回',v:back,c:'green'},{l:'未收回',v:unback,c:unback?'red':'green'},
+    {l:'回收率',v:rate(back,gen)+'%',c:'blue'},
+    {l:'电子函证占比',v:rate(elec,elec+paper)+'%',c:'green',sub:`电子 ${elec} / 纸质 ${paper}`}],'conf-cards');
   $('cf-count').textContent='共 '+C.length+' 行';
-  const H=['项目','合计生成','已发出','未发出','已收回','未收回','回收率','负责人','备注'];
+  const H=['项目','合计生成','已发出','未发出','已收回','未收回','回收率','电子','纸质','负责人','备注'];
   $('t-conf').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-conf').querySelector('tbody').innerHTML=C.map(x=>{const r=rate(x.back,x.gen);
     return `<tr><td><b>${x.name||x.sn}</b></td><td>${x.gen}</td><td>${x.sent}</td>
       <td>${x.unsent?'<span class=over>'+x.unsent+'</span>':0}</td>
       <td>${x.back}</td><td>${x.unback?'<span class=over>'+x.unback+'</span>':0}</td>
-      <td>${r}%</td><td>${x.owner}</td><td style="white-space:normal;max-width:260px">${x.note||''}</td></tr>`;}).join('');
+      <td>${r}%</td><td>${x.elec||0}</td><td>${x.paper||0}</td><td>${x.owner}</td><td style="white-space:normal;max-width:240px">${x.note||''}</td></tr>`;}).join('');
   if(currentTab==='conf')drawConfChart();
 }
 function drawConfChart(){
+  const t=DATA.confTypes||{};
+  const labels=Object.keys(t).filter(k=>t[k]>0);
+  pie('c-conftype',labels,labels.map(k=>t[k]),
+    labels.map(k=>/电子|confirmation/i.test(k)?(k.includes('一')?'#2db84d':k.includes('二')?'#7ed957':'#1d8f3a'):(/HK17/.test(k)?'#8e6fd6':(k.includes('一')?'#f5a623':'#f7c873'))));
   const C=_confRows.length?_confRows:DATA.conf;
   bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
     {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
@@ -548,49 +575,65 @@ function drawConfChart(){
 function renderOS(){
   fillSel('of-proj',[...new Set(DATA.oslist.map(o=>o.name).filter(Boolean))]);
   fillSel('of-cls',[...new Set(DATA.oslist.map(o=>o.cls).filter(Boolean))]);
-  ['of-proj','of-cls','of-status'].forEach(id=>$(id).oninput=drawOS);
+  ['of-kind','of-proj','of-cls','of-status'].forEach(id=>$(id).oninput=drawOS);
   drawOS();
 }
 let _osRows=[];
 function drawOS(){
-  const pj=$('of-proj').value,cl=$('of-cls').value,stt=$('of-status').value;
-  let O=DATA.oslist.filter(o=>(!pj||o.name===pj)&&(!cl||o.cls===cl)&&(stt!=='open'||!o.solved)&&(stt!=='solved'||o.solved));
+  const kd=$('of-kind').value,pj=$('of-proj').value,cl=$('of-cls').value,stt=$('of-status').value;
+  let O=DATA.oslist.filter(o=>(!kd||o.kind===kd)&&(!pj||o.name===pj)&&(!cl||o.cls===cl)&&(stt!=='open'||!o.solved)&&(stt!=='solved'||o.solved));
   _osRows=O;
   const all=DATA.oslist;const open=all.filter(o=>!o.solved).length;
+  const intOpen=all.filter(o=>!o.solved&&o.kind==='internal').length;
+  const extOpen=all.filter(o=>!o.solved&&o.kind==='external').length;
   kpi([{l:'OS 总数',v:all.length},{l:'未解决',v:open,c:open?'red':'green'},
-    {l:'已解决',v:all.length-open,c:'green'},
+    {l:'内部卡点(未解决)',v:intOpen,c:intOpen?'red':'green',sub:'需CSDC解决'},
+    {l:'外部卡点(未解决)',v:extOpen,c:extOpen?'orange':'green',sub:'待项目组/客户'},
     {l:'涉及项目',v:new Set(all.map(o=>o.name)).size,c:'purple'}],'os-cards');
   $('of-count').textContent='共 '+O.length+' 项';
-  const H=['项目','Entity','科目','OS事项','分类','提出时间','负责人','是否解决','备注'];
+  const H=['项目','卡点类型','Entity','科目','OS事项','分类','提出时间','负责人','是否解决','备注'];
   $('t-os').querySelector('thead').innerHTML='<tr>'+H.map(h=>`<th>${h}</th>`).join('')+'</tr>';
   $('t-os').querySelector('tbody').innerHTML=O.map(o=>`<tr>
-    <td><b>${o.name}</b></td><td>${o.entity}</td><td>${o.subj}</td>
-    <td style="white-space:normal;max-width:300px">${o.item}</td>
-    <td><span class="pill" style="background:${o.cls.includes('PBC')?'#f5a623':o.cls.includes('issue')?'#e0383e':'#4a90d9'}">${o.cls}</span></td>
+    <td><b>${o.name}</b></td>
+    <td><span class="pill" style="background:${o.kind==='internal'?'var(--red)':'var(--blue)'}">${o.kind==='internal'?'内部':'外部'}</span></td>
+    <td>${o.entity}</td><td>${o.subj}</td>
+    <td style="white-space:normal;max-width:280px">${o.item}</td>
+    <td><span class="pill" style="background:${o.cls.includes('PBC')?'#f5a623':o.cls.includes('issue')?'#e0383e':o.cls.includes('CSDC')?'#8e6fd6':'#4a90d9'}">${o.cls}</span></td>
     <td>${fmtMs(o.raise)}</td><td>${o.owner}</td>
     <td>${o.solved?'<span class=under>已解决</span>':'<span class=over>未解决</span>'}</td>
-    <td style="white-space:normal;max-width:220px">${o.note||''}</td></tr>`).join('');
+    <td style="white-space:normal;max-width:200px">${o.note||''}</td></tr>`).join('');
   if(currentTab==='os')drawOSCharts();
 }
 function drawOSCharts(){
-  const O=_osRows.length?_osRows:DATA.oslist;const open=O.filter(o=>!o.solved).length;
-  const byProj={};O.forEach(o=>byProj[o.name]=(byProj[o.name]||0)+1);
-  bar('c-osproj',{labels:Object.keys(byProj),datasets:[{label:'OS数',data:Object.values(byProj),backgroundColor:'#8e6fd6'}]},
-    {indexAxis:'y',plugins:{legend:{display:false}}});
-  pie('c-osstat',['已解决','未解决'],[O.length-open,open],['#2db84d','#e0383e']);
+  const all=DATA.oslist;
+  const intOpen=all.filter(o=>!o.solved&&o.kind==='internal').length;
+  const extOpen=all.filter(o=>!o.solved&&o.kind==='external').length;
+  pie('c-oskind',['内部卡点(CSDC)','外部卡点(项目组/客户)'],[intOpen,extOpen],['#e0383e','#4a90d9']);
+  const byCls={};(_osRows.length?_osRows:all).forEach(o=>byCls[o.cls]=(byCls[o.cls]||0)+1);
+  const ck=Object.keys(byCls);
+  pie('c-oscls',ck,ck.map(k=>byCls[k]),ck.map(k=>k.includes('PBC')?'#f5a623':k.includes('issue')?'#e0383e':k.includes('CSDC')?'#8e6fd6':k.includes('ET')?'#4a90d9':'#999'));
 }
 
 /* ===== 图表（只画当前可见页）===== */
 function renderCharts(tab){
   if(typeof Chart==='undefined'||!DATA)return;
   if(tab==='overview'){
-    const named=DATA.projects.filter(p=>p.wp>0).sort((a,b)=>rate(a.done,a.wp)-rate(b.done,b.wp));
-    bar('c-proj',{labels:named.map(p=>`${p.name}（${p.done}/${p.wp}）`),datasets:[
-      {label:'已完成',data:named.map(p=>p.done),backgroundColor:'#2db84d',stack:'a'},
-      {label:'未完成',data:named.map(p=>p.wp-p.done),backgroundColor:'#e3e3e8',stack:'a'}]},
-      {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}},
-       plugins:{tooltip:{callbacks:{afterlabel:c=>{const p=named[c.dataIndex];return '完成率 '+rate(p.done,p.wp)+'%';}}}}});
-    const bp=DATA.projects.filter(p=>p.budget>0);
+    const P=DATA.projects;
+    // 项目交付状态分布（饼）
+    const first=P.filter(p=>deliveryBucket(p)==='first').length,final=P.filter(p=>deliveryBucket(p)==='final').length,doing=P.length-first-final;
+    pie('c-delivery',['进行中','首次交付','整体交付'],[doing,first,final],['#4a90d9','#f5a623','#2db84d']);
+    // 项目类型分布（饼）
+    const byType={};P.forEach(p=>byType[p.type]=(byType[p.type]||0)+1);
+    const tk=Object.keys(byType);
+    pie('c-type',tk,tk.map(k=>byType[k]),['#2e2e38','#ffe600','#4a90d9','#2db84d','#f5a623','#8e6fd6','#e0383e','#9aa0a6']);
+    // 各科目(section)底稿完成情况（堆叠条）
+    const sec=(DATA.section||[]).slice(0,16);
+    bar('c-section',{labels:sec.map(s=>s.section),datasets:[
+      {label:'已完成',data:sec.map(s=>s.done),backgroundColor:'#2db84d',stack:'a'},
+      {label:'未完成',data:sec.map(s=>s.wp-s.done),backgroundColor:'#e3e3e8',stack:'a'}]},
+      {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}});
+    // 预算 vs 实际
+    const bp=P.filter(p=>p.budget>0);
     bar('c-budget',{labels:bp.map(p=>p.name),datasets:[
       {label:'预算',data:bp.map(p=>p.budget),backgroundColor:'#cfcfd6'},
       {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#ffe600')}]},
