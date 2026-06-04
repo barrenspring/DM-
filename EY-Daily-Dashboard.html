@@ -180,6 +180,7 @@ body.print-prep .page{display:block!important;}
       <select id="of-proj"><option value="">全部项目</option></select>
       <select id="of-cls"><option value="">全部分类</option></select>
       <select id="of-status"><option value="">全部状态</option><option value="open">未解决</option><option value="solved">已解决</option></select>
+      <input type="text" id="of-kw" placeholder="搜索科目/事项/Entity…">
       <span style="font-size:12px;color:#999;" id="of-count"></span>
     </div>
     <div class="cards" id="os-cards"></div>
@@ -265,6 +266,16 @@ const valueLabelPlugin={
         let total=0,lastEl=null;
         chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
           const v=+ds.data[i]||0;total+=v;const el=meta.data[i];if(el)lastEl=el;});
+        // 可选：在各段内显示该段数值（白字），用于需要看清各分段的图（如函证已收/未收）
+        if(cfg.segLabel){
+          ctx.font='bold 10px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+          chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
+            const v=+ds.data[i]||0;if(v< (cfg.segMin||1))return;const el=meta.data[i];if(!el)return;
+            const p=el.tooltipPosition();
+            ctx.lineWidth=2.5;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.fillStyle='#fff';
+            ctx.strokeText(fmtNum(v),p.x,p.y);ctx.fillText(fmtNum(v),p.x,p.y);});
+          ctx.font='bold 11px "Microsoft YaHei",sans-serif';
+        }
         if(!total||!lastEl)continue;
         ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.fillStyle=LABEL;
         if(horizontal){ctx.textAlign='left';ctx.textBaseline='middle';
@@ -509,20 +520,31 @@ function renderOverviewCards(){
 
   const alerts=[];
   P.forEach(p=>{const b=budgetAlert(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.tag,msg:b.msg});
-    // 逾期/临近DDL：尚未最终交付且接近或超过首次交付DDL
-    if(deliveryBucket(p)!=='final'&&p.started>0){const dd=daysTo(p.ddl1);
-      if(dd!==null&&dd<0)alerts.push({lv:'crit',proj:p.name,tag:'已逾期',msg:`首交DDL已过 ${Math.abs(dd)} 天，完成率 ${rate(p.done,p.wp)}%`});
-      else if(dd!==null&&dd<=7)alerts.push({lv:'warn',proj:p.name,tag:'临近DDL',msg:`距首交 ${dd} 天，完成率 ${rate(p.done,p.wp)}%`});
+    if(p.started===0)return;
+    const firstDone=p.deliv1>=p.wp, finalDone=p.deliv2>=p.wp;
+    // 首次交付：DDL已到但未全部首交=逾期；已全部首交则不预警
+    if(!firstDone){const d1=daysTo(p.ddl1);
+      if(d1!==null&&d1<0)alerts.push({lv:'crit',proj:p.name,tag:'首交逾期',msg:`首次交付DDL已过 ${Math.abs(d1)} 天，仍有 ${p.wp-p.deliv1} 张未首交`});
+      else if(d1!==null&&d1<=7)alerts.push({lv:'warn',proj:p.name,tag:'临近首交',msg:`距首次交付 ${d1} 天，已首交 ${p.deliv1}/${p.wp}`});
+    }
+    // 最终交付：已全部首交但未全部最终交付，看最终DDL
+    if(firstDone&&!finalDone){const d2=daysTo(p.ddl2);
+      if(d2!==null&&d2<0)alerts.push({lv:'crit',proj:p.name,tag:'终交逾期',msg:`最终交付DDL已过 ${Math.abs(d2)} 天，仍有 ${p.wp-p.deliv2} 张未最终交付`});
+      else if(d2!==null&&d2<=3)alerts.push({lv:'warn',proj:p.name,tag:'临近终交',msg:`距最终交付 ${d2} 天，已最终交付 ${p.deliv2}/${p.wp}`});
     }
   });
-  const osInt={},osExt={};
-  DATA.oslist.filter(o=>!o.solved).forEach(o=>{if(o.kind==='internal')osInt[o.name]=(osInt[o.name]||0)+1;else osExt[o.name]=(osExt[o.name]||0)+1;});
-  Object.entries(osInt).forEach(([nm,n])=>alerts.push({lv:'crit',proj:nm,tag:'内部卡点',msg:`${n} 项需 CSDC 尽快解决`}));
-  Object.entries(osExt).forEach(([nm,n])=>alerts.push({lv:'info',proj:nm,tag:'外部卡点',msg:`${n} 项待项目组/客户跟进`}));
-  const unsent={},unback={};
-  DATA.conf.forEach(c=>{if(c.unsent>0)unsent[c.name]=(unsent[c.name]||0)+c.unsent;if(c.unback>0)unback[c.name]=(unback[c.name]||0)+c.unback;});
-  Object.entries(unsent).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未发',msg:`${n} 份未发出`}));
-  Object.entries(unback).forEach(([nm,n])=>alerts.push({lv:'warn',proj:nm,tag:'函证未收',msg:`${n} 份未收回`}));
+  // 函证：按项目把未发出+未收回合并成一行
+  const confAgg={};
+  DATA.conf.forEach(c=>{const k=cfKey(c.name);const t=confAgg[k]||(confAgg[k]={unsent:0,unback:0});t.unsent+=c.unsent;t.unback+=c.unback;});
+  Object.entries(confAgg).forEach(([nm,t])=>{if(!t.unsent&&!t.unback)return;
+    const parts=[];if(t.unsent)parts.push(`未发出 ${t.unsent} 份`);if(t.unback)parts.push(`未收回 ${t.unback} 份`);
+    alerts.push({lv:'warn',proj:nm,tag:'函证',msg:parts.join('，')});});
+  // OS：按项目合并内部/外部
+  const osAgg={};
+  DATA.oslist.filter(o=>!o.solved).forEach(o=>{const t=osAgg[o.name]||(osAgg[o.name]={int:0,ext:0});if(o.kind==='internal')t.int++;else t.ext++;});
+  Object.entries(osAgg).forEach(([nm,t])=>{
+    const parts=[];if(t.int)parts.push(`内部卡点 ${t.int} 项(需CSDC)`);if(t.ext)parts.push(`外部卡点 ${t.ext} 项(待项目组/客户)`);
+    alerts.push({lv:t.int?'crit':'info',proj:nm,tag:'OS',msg:parts.join('，')});});
   const order={crit:0,warn:1,info:2};alerts.sort((a,b)=>order[a.lv]-order[b.lv]);
   $('ov-alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.lv}"><span class="tag">${a.tag}</span><b>${a.proj}</b>&nbsp;—&nbsp;${a.msg}</div>`).join(''):'<div style="color:#999;padding:8px;">暂无预警 🎉</div>';
 }
@@ -571,10 +593,12 @@ function drawProjectCharts(){
     {label:'已完成',data:rows.map(p=>p.done),backgroundColor:'#2db84d',stack:'a'},
     {label:'未完成',data:rows.map(p=>p.wp-p.done),backgroundColor:'#e3e3e8',stack:'a'}]},
     {indexAxis:'y',scales:{x:{stacked:true},y:{stacked:true}}});
-  // 待复核统计（饼）：已完成但未FIC复核=待FIC；已FIC未EIC=待EIC；已EIC=已复核
-  let waitFic=0,waitEic=0,reviewed=0;
-  rows.forEach(p=>{waitFic+=Math.max(0,p.done-p.fic_r);waitEic+=Math.max(0,p.fic_r-p.eic_r);reviewed+=p.eic_r;});
-  pie('c-review',['待FIC复核','待EIC复核','已EIC复核'],[waitFic,waitEic,reviewed],['#f5a623','#4a90d9','#2db84d']);
+  // 待复核统计（双环）：内圈=FIC(待FIC复核/FIC已复核)，外圈=EIC(待EIC复核/EIC已复核)
+  let waitFic=0,ficDone=0,waitEic=0,eicDone=0;
+  rows.forEach(p=>{waitFic+=Math.max(0,p.done-p.fic_r);ficDone+=p.fic_r;waitEic+=Math.max(0,p.fic_r-p.eic_r);eicDone+=p.eic_r;});
+  reviewDonut('c-review',
+    {labels:['待FIC复核','FIC已复核'],data:[waitFic,ficDone],colors:['#f5a623','#2db84d']},
+    {labels:['待EIC复核','EIC已复核'],data:[waitEic,eicDone],colors:['#4a90d9','#1d8f3a']});
   // 各科目完成情况（堆叠条）
   const sec=(DATA.section||[]).slice(0,16);
   bar('c-section',{labels:sec.map(s=>s.section),datasets:[
@@ -656,20 +680,22 @@ function drawConfChart(){
   bar('c-conf',{labels:C.map(x=>x.name||x.sn),datasets:[
     {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
     {label:'未收回',data:C.map(x=>x.unback),backgroundColor:'#e0383e',stack:'a'}]},
-    {scales:{x:{stacked:true},y:{stacked:true}}});
+    {scales:{x:{stacked:true},y:{stacked:true}}},
+    {segLabel:true,segMin:1});
 }
 
 /* ----- OS ----- */
 function renderOS(){
   fillSel('of-proj',[...new Set(DATA.oslist.map(o=>o.name).filter(Boolean))]);
   fillSel('of-cls',[...new Set(DATA.oslist.map(o=>o.cls).filter(Boolean))]);
-  ['of-kind','of-proj','of-cls','of-status'].forEach(id=>$(id).oninput=drawOS);
+  ['of-kind','of-proj','of-cls','of-status','of-kw'].forEach(id=>$(id).oninput=drawOS);
   drawOS();
 }
 let _osRows=[];
 function drawOS(){
-  const kd=$('of-kind').value,pj=$('of-proj').value,cl=$('of-cls').value,stt=$('of-status').value;
-  let O=DATA.oslist.filter(o=>(!kd||o.kind===kd)&&(!pj||o.name===pj)&&(!cl||o.cls===cl)&&(stt!=='open'||!o.solved)&&(stt!=='solved'||o.solved));
+  const kd=$('of-kind').value,pj=$('of-proj').value,cl=$('of-cls').value,stt=$('of-status').value,kw=($('of-kw').value||'').trim();
+  let O=DATA.oslist.filter(o=>(!kd||o.kind===kd)&&(!pj||o.name===pj)&&(!cl||o.cls===cl)&&(stt!=='open'||!o.solved)&&(stt!=='solved'||o.solved)
+    &&(!kw||(o.subj+o.item+o.entity+o.owner).includes(kw)));
   _osRows=O;
   const all=DATA.oslist;const open=all.filter(o=>!o.solved).length;
   const intOpen=all.filter(o=>!o.solved&&o.kind==='internal').length;
@@ -696,10 +722,10 @@ function drawOSCharts(){
   const all=DATA.oslist;
   const intOpen=all.filter(o=>!o.solved&&o.kind==='internal').length;
   const extOpen=all.filter(o=>!o.solved&&o.kind==='external').length;
-  pie('c-oskind',['内部卡点(CSDC)','外部卡点(项目组/客户)'],[intOpen,extOpen],['#e0383e','#4a90d9']);
+  pie('c-oskind',['内部卡点(CSDC)','外部卡点(项目组/客户)'],[intOpen,extOpen],['#e0383e','#4a90d9'],{valueOnly:true});
   const byCls={};(_osRows.length?_osRows:all).forEach(o=>byCls[o.cls]=(byCls[o.cls]||0)+1);
   const ck=Object.keys(byCls);
-  pie('c-oscls',ck,ck.map(k=>byCls[k]),ck.map(k=>k.includes('PBC')?'#f5a623':k.includes('issue')?'#e0383e':k.includes('CSDC')?'#8e6fd6':k.includes('ET')?'#4a90d9':'#999'));
+  pie('c-oscls',ck,ck.map(k=>byCls[k]),ck.map(k=>k.includes('PBC')?'#f5a623':k.includes('issue')?'#e0383e':k.includes('CSDC')?'#8e6fd6':k.includes('ET')?'#4a90d9':'#999'),{valueOnly:true});
 }
 
 /* ===== 图表（只画当前可见页）===== */
@@ -761,6 +787,22 @@ function doubleDonut(id,inner,outer){destroy(id);
         tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
   // 仅内圈(dataset 0=汇总)放小字，外圈(明细)不放数字
   c.$labels={ringLabel:[0],pieFont:10,valueOnly:false};
+  charts[id]=c;}
+function reviewDonut(id,inner,outer){destroy(id);
+  // 内圈=FIC，外圈=EIC；两圈都标数字；图例合并展示四类
+  const c=new Chart($(id),{type:'doughnut',
+    data:{labels:inner.labels.concat(outer.labels),datasets:[
+      {label:'FIC',data:inner.data,backgroundColor:inner.colors,weight:0.7,_labels:inner.labels},
+      {label:'EIC',data:outer.data,backgroundColor:outer.colors,weight:1,_labels:outer.labels}
+    ]},
+    options:Object.assign({},baseOpts,{cutout:'25%',
+      plugins:{legend:{position:'bottom',labels:{generateLabels:()=>{
+        const a=inner.labels.map((lb,i)=>({text:lb,fillStyle:inner.colors[i],strokeStyle:inner.colors[i]}));
+        const b=outer.labels.map((lb,i)=>({text:lb,fillStyle:outer.colors[i],strokeStyle:outer.colors[i]}));
+        return a.concat(b);
+      }}},
+        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${ds.label}·${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
+  c.$labels={ringLabel:[0,1],pieFont:10,valueOnly:true};   // 两圈都只显示数字
   charts[id]=c;}
 </script>
 </body>
