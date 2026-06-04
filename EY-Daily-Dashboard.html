@@ -232,7 +232,8 @@ const fmtNum=v=>Number.isInteger(v)?v:Math.round(v);
 const valueLabelPlugin={
   id:'valueLabel',
   afterDatasetsDraw(chart){
-    const cfg=chart.$labels||{};               // 每图标签配置
+    // 配置优先从 options.plugins.valueLabel 读取（首帧即可用），兼容旧的 chart.$labels
+    const cfg=(chart.options&&chart.options.plugins&&chart.options.plugins.valueLabel)||chart.$labels||{};
     const ctx=chart.ctx;
     const type=chart.config.type;
     if(type==='doughnut'||type==='pie'){
@@ -805,43 +806,41 @@ function bar(id,data,opts,labelCfg){destroy(id);
   if(opts)delete opts.maxBarThickness;
   const horizontal=opts&&opts.indexAxis==='y';
   const pad=horizontal?{right:42}:{top:20};
-  const c=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.8,barPercentage:0.9,layout:{padding:pad}},baseOpts,opts)});
-  c.$labels=labelCfg||{};charts[id]=c;}
+  const o=Object.assign({categoryPercentage:0.8,barPercentage:0.9,layout:{padding:pad}},baseOpts,opts);
+  o.plugins=Object.assign({},o.plugins,{valueLabel:labelCfg||{}});
+  charts[id]=new Chart($(id),{type:'bar',data,options:o});}
 function pie(id,labels,data,colors,labelCfg){destroy(id);
-  const c=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});
-  c.$labels=labelCfg||{};charts[id]=c;}
+  const o=Object.assign({},baseOpts);o.plugins=Object.assign({},o.plugins,{valueLabel:labelCfg||{}});
+  charts[id]=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:o});}
 function doubleDonut(id,inner,outer){destroy(id);
   // Chart.js 中 dataset[0] 为最内圈：内圈=汇总(电子/纸质)，外圈=明细类型
   // 图例展示明细类型(外圈)，更有信息量
-  const c=new Chart($(id),{type:'doughnut',
+  charts[id]=new Chart($(id),{type:'doughnut',
     data:{labels:outer.labels,datasets:[
       {label:'汇总',data:inner.data,backgroundColor:inner.colors,weight:0.55,_labels:inner.labels},
       {label:'明细',data:outer.data,backgroundColor:outer.colors,weight:1,_labels:outer.labels}
     ]},
     options:Object.assign({},baseOpts,{cutout:'28%',
-      plugins:{legend:{position:'bottom',labels:{generateLabels:ch=>{
-        const ds=ch.data.datasets[1];return outer.labels.map((lb,i)=>({text:lb,fillStyle:outer.colors[i],strokeStyle:outer.colors[i],index:i}));
+      plugins:{valueLabel:{ringLabel:[0],pieFont:10,valueOnly:false},
+        legend:{position:'bottom',labels:{generateLabels:ch=>{
+        return outer.labels.map((lb,i)=>({text:lb,fillStyle:outer.colors[i],strokeStyle:outer.colors[i],index:i}));
       }}},
-        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
-  // 仅内圈(dataset 0=汇总)放小字，外圈(明细)不放数字
-  c.$labels={ringLabel:[0],pieFont:10,valueOnly:false};
-  charts[id]=c;}
+        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});}
 function reviewDonut(id,inner,outer){destroy(id);
   // 内圈=FIC，外圈=EIC；两圈都标数字；图例合并展示四类
-  const c=new Chart($(id),{type:'doughnut',
+  charts[id]=new Chart($(id),{type:'doughnut',
     data:{labels:inner.labels.concat(outer.labels),datasets:[
       {label:'FIC',data:inner.data,backgroundColor:inner.colors,weight:0.7,_labels:inner.labels},
       {label:'EIC',data:outer.data,backgroundColor:outer.colors,weight:1,_labels:outer.labels}
     ]},
     options:Object.assign({},baseOpts,{cutout:'25%',
-      plugins:{legend:{position:'bottom',labels:{generateLabels:()=>{
+      plugins:{valueLabel:{ringLabel:[0,1],pieFont:10,valueOnly:true},
+        legend:{position:'bottom',labels:{generateLabels:()=>{
         const a=inner.labels.map((lb,i)=>({text:lb,fillStyle:inner.colors[i],strokeStyle:inner.colors[i]}));
         const b=outer.labels.map((lb,i)=>({text:lb,fillStyle:outer.colors[i],strokeStyle:outer.colors[i]}));
         return a.concat(b);
       }}},
-        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${ds.label}·${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
-  c.$labels={ringLabel:[0,1],pieFont:10,valueOnly:true};   // 两圈都只显示数字
-  charts[id]=c;}
+        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${ds.label}·${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});}
 </script>
 </body>
 </html>
