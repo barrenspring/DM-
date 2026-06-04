@@ -264,28 +264,43 @@ const valueLabelPlugin={
     const LABEL='#2c5d8f';
     ctx.save();ctx.font='bold 11px "Microsoft YaHei",sans-serif';
     if(stacked){
-      // 堆叠：在整条的末端外侧显示该条总计（避免段内白字看不清）
       const nCat=chart.data.labels.length;
       for(let i=0;i<nCat;i++){
-        let total=0,lastEl=null;
+        // 找柱顶/柱末端元素（纵向取最上、横向取最右）
+        let topEl=null;
         chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
-          const v=+ds.data[i]||0;total+=v;const el=meta.data[i];if(el)lastEl=el;});
-        // 可选：在各段内显示该段数值（白字），用于需要看清各分段的图（如函证已收/未收）
-        if(cfg.segLabel){
-          ctx.font='bold 10px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-          chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
-            const v=+ds.data[i]||0;if(v< (cfg.segMin||1))return;const el=meta.data[i];if(!el)return;
-            const p=el.tooltipPosition();
-            ctx.lineWidth=2.5;ctx.strokeStyle='rgba(0,0,0,.35)';ctx.fillStyle='#fff';
-            ctx.strokeText(fmtNum(v),p.x,p.y);ctx.fillText(fmtNum(v),p.x,p.y);});
+          const el=meta.data[i];if(!el)return;
+          if(horizontal){if(topEl===null||el.x>topEl.x)topEl=el;}else{if(topEl===null||el.y<topEl.y)topEl=el;}});
+        if(!topEl)continue;
+        // 模式A：分数据集在柱顶外侧标注（>0 才标，指定数据集始终标），各自颜色
+        if(cfg.dsLabels){
           ctx.font='bold 11px "Microsoft YaHei",sans-serif';
+          const cols=cfg.dsLabelColors||[];
+          const entries=[];
+          chart.data.datasets.forEach((ds,di)=>{const v=+ds.data[i]||0;
+            const always=(cfg.alwaysShow||[]).includes(di);
+            if(v>0||always)entries.push({v,color:cols[di]||LABEL});});
+          if(horizontal){
+            let x=topEl.x+6;ctx.textAlign='left';ctx.textBaseline='middle';
+            entries.forEach(e=>{ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';
+              ctx.strokeText(fmtNum(e.v),x,topEl.y);ctx.fillStyle=e.color;ctx.fillText(fmtNum(e.v),x,topEl.y);
+              x+=ctx.measureText(fmtNum(e.v)).width+12;});
+          }else{
+            ctx.textAlign='center';ctx.textBaseline='bottom';let y=topEl.y-4;
+            entries.forEach(e=>{ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.95)';
+              ctx.strokeText(fmtNum(e.v),topEl.x,y);ctx.fillStyle=e.color;ctx.fillText(fmtNum(e.v),topEl.x,y);
+              y-=14;});
+          }
+          continue;
         }
-        if(!total||!lastEl)continue;
+        // 模式B（默认）：在柱末端外侧显示该条总计
+        let total=0;chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;total+=+ds.data[i]||0;});
+        if(!total)continue;
         ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.fillStyle=LABEL;
         if(horizontal){ctx.textAlign='left';ctx.textBaseline='middle';
-          ctx.strokeText(fmtNum(total),lastEl.x+5,lastEl.y);ctx.fillText(fmtNum(total),lastEl.x+5,lastEl.y);}
+          ctx.strokeText(fmtNum(total),topEl.x+5,topEl.y);ctx.fillText(fmtNum(total),topEl.x+5,topEl.y);}
         else{ctx.textAlign='center';ctx.textBaseline='bottom';
-          ctx.strokeText(fmtNum(total),lastEl.x,lastEl.y-4);ctx.fillText(fmtNum(total),lastEl.x,lastEl.y-4);}
+          ctx.strokeText(fmtNum(total),topEl.x,topEl.y-4);ctx.fillText(fmtNum(total),topEl.x,topEl.y-4);}
       }
     }else{
       chart.data.datasets.forEach((ds,di)=>{
@@ -685,7 +700,7 @@ function drawConfChart(){
     {label:'已收回',data:C.map(x=>x.back),backgroundColor:'#2db84d',stack:'a'},
     {label:'未收回',data:C.map(x=>x.unback),backgroundColor:'#e0383e',stack:'a'}]},
     {scales:{x:{stacked:true},y:{stacked:true}}},
-    {segLabel:true,segMin:1});
+    {dsLabels:true,alwaysShow:[0],dsLabelColors:['#1d8f3a','#e0383e']});
 }
 
 /* ----- OS ----- */
