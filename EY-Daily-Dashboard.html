@@ -50,9 +50,10 @@ header .sub{font-size:12px;color:#bdbdc7;}
 .cc.tall{height:360px;}
 .panel{background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px;}
 .panel h3{font-size:14px;margin-bottom:12px;color:#555;}
-.alert{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;margin-bottom:7px;font-size:13px;}
+.alert{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:6px;margin-bottom:7px;font-size:13px;line-height:1.7;}
+.alert>span:last-child{flex:1;}
 .alert.crit{background:#fdecec;color:#a01b22;}.alert.warn{background:#fff6e0;color:#8a5a00;}.alert.info{background:#eef4fb;color:#2c5d8f;}
-.alert .tag{font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff;white-space:nowrap;}
+.alert .tag{font-weight:700;padding:2px 8px;border-radius:10px;font-size:11px;color:#fff;white-space:nowrap;margin-top:2px;}
 .alert.crit .tag{background:var(--red);}.alert.warn .tag{background:var(--orange);}.alert.info .tag{background:var(--blue);}
 .table-box{background:#fff;border-radius:8px;padding:6px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -590,34 +591,49 @@ function renderOverviewCards(){
   ],'ov-cards2');
 
   const alerts=[];
-  P.forEach(p=>{const b=budgetAlert(p);if(b)alerts.push({lv:b.lv,proj:p.name,tag:b.tag,msg:b.msg});
-    if(p.started===0)return;
+  // 1) 预算（超支/紧张）：仍按项目逐条，便于定位
+  P.forEach(p=>{const b=budgetAlert(p);if(b)alerts.push({lv:b.lv,tag:b.tag,html:`<b>${p.name}</b>&nbsp;—&nbsp;${b.msg}`});});
+
+  // 2) 临近交付（首次+最终，含逾期）整合为一行
+  const delay=[]; // 逾期项
+  const near=[];  // 临近项
+  P.forEach(p=>{if(p.started===0)return;
     const firstDone=p.deliv1>=p.wp, finalDone=p.deliv2>=p.wp;
-    // 首次交付：DDL已到但未全部首交=逾期；已全部首交则不预警
     if(!firstDone){const d1=daysTo(p.ddl1);
-      if(d1!==null&&d1<0)alerts.push({lv:'crit',proj:p.name,tag:'首交逾期',msg:`首次交付DDL已过 ${Math.abs(d1)} 天，仍有 ${p.wp-p.deliv1} 张未首交`});
-      else if(d1!==null&&d1<=7)alerts.push({lv:'warn',proj:p.name,tag:'临近首交',msg:`距首次交付 ${d1} 天，已首交 ${p.deliv1}/${p.wp}`});
-    }
-    // 最终交付：已全部首交但未全部最终交付，看最终DDL
-    if(firstDone&&!finalDone){const d2=daysTo(p.ddl2);
-      if(d2!==null&&d2<0)alerts.push({lv:'crit',proj:p.name,tag:'终交逾期',msg:`最终交付DDL已过 ${Math.abs(d2)} 天，仍有 ${p.wp-p.deliv2} 张未最终交付`});
-      else if(d2!==null&&d2<=3)alerts.push({lv:'warn',proj:p.name,tag:'临近终交',msg:`距最终交付 ${d2} 天，已最终交付 ${p.deliv2}/${p.wp}`});
+      if(d1!==null&&d1<0)delay.push(`${p.name}(首交逾期${Math.abs(d1)}天·剩${p.wp-p.deliv1}张)`);
+      else if(d1!==null&&d1<=7)near.push(`${p.name}(距首交${d1}天)`);
+    }else if(!finalDone){const d2=daysTo(p.ddl2);
+      if(d2!==null&&d2<0)delay.push(`${p.name}(终交逾期${Math.abs(d2)}天·剩${p.wp-p.deliv2}张)`);
+      else if(d2!==null&&d2<=3)near.push(`${p.name}(距终交${d2}天)`);
     }
   });
-  // 函证：按项目把未发出+未收回合并成一行
-  const confAgg={};
-  DATA.conf.forEach(c=>{const k=cfKey(c.name);const t=confAgg[k]||(confAgg[k]={unsent:0,unback:0});t.unsent+=c.unsent;t.unback+=c.unback;});
-  Object.entries(confAgg).forEach(([nm,t])=>{if(!t.unsent&&!t.unback)return;
-    const parts=[];if(t.unsent)parts.push(`未发出 ${t.unsent} 份`);if(t.unback)parts.push(`未收回 ${t.unback} 份`);
-    alerts.push({lv:'warn',proj:nm,tag:'函证',msg:parts.join('，')});});
-  // OS：按项目合并内部/外部
-  const osAgg={};
-  DATA.oslist.filter(o=>!o.solved).forEach(o=>{const t=osAgg[o.name]||(osAgg[o.name]={int:0,ext:0});if(o.kind==='internal')t.int++;else t.ext++;});
-  Object.entries(osAgg).forEach(([nm,t])=>{
-    const parts=[];if(t.int)parts.push(`内部卡点 ${t.int} 项(需CSDC)`);if(t.ext)parts.push(`外部卡点 ${t.ext} 项(待项目组/客户)`);
-    alerts.push({lv:t.int?'crit':'info',proj:nm,tag:'OS',msg:parts.join('，')});});
+  if(delay.length||near.length){
+    const segs=[];if(delay.length)segs.push(`<b style="color:#a01b22">逾期 ${delay.length}：</b>${delay.join('、')}`);
+    if(near.length)segs.push(`<b>临近 ${near.length}：</b>${near.join('、')}`);
+    alerts.push({lv:delay.length?'crit':'warn',tag:'交付',html:segs.join('　|　')});
+  }
+
+  // 3) 函证整合为一行
+  const confAgg={};let cUnsentT=0,cUnbackT=0;
+  DATA.conf.forEach(c=>{const k=cfKey(c.name);const t=confAgg[k]||(confAgg[k]={unsent:0,unback:0});t.unsent+=c.unsent;t.unback+=c.unback;cUnsentT+=c.unsent;cUnbackT+=c.unback;});
+  if(cUnsentT||cUnbackT){
+    const list=Object.entries(confAgg).filter(([,t])=>t.unsent||t.unback).map(([nm,t])=>{
+      const d=[];if(t.unsent)d.push(`未发${t.unsent}`);if(t.unback)d.push(`未收${t.unback}`);return `${nm}(${d.join('/')})`;});
+    alerts.push({lv:'warn',tag:'函证',html:`<b>合计未发出 ${cUnsentT} / 未收回 ${cUnbackT}</b>　${list.join('、')}`});
+  }
+
+  // 4) OS 整合为一行
+  let osInt=0,osExt=0;const osProjInt=new Set(),osProjExt=new Set();
+  DATA.oslist.filter(o=>!o.solved).forEach(o=>{if(o.kind==='internal'){osInt++;osProjInt.add(o.name);}else{osExt++;osProjExt.add(o.name);}});
+  if(osInt||osExt){
+    const segs=[];
+    if(osInt)segs.push(`<b style="color:#a01b22">内部卡点 ${osInt} 项(需CSDC)：</b>${[...osProjInt].join('、')}`);
+    if(osExt)segs.push(`<b>外部卡点 ${osExt} 项(待项目组/客户)：</b>${[...osProjExt].join('、')}`);
+    alerts.push({lv:osInt?'crit':'info',tag:'OS',html:segs.join('　|　')});
+  }
+
   const order={crit:0,warn:1,info:2};alerts.sort((a,b)=>order[a.lv]-order[b.lv]);
-  $('ov-alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.lv}"><span class="tag">${a.tag}</span><b>${a.proj}</b>&nbsp;—&nbsp;${a.msg}</div>`).join(''):'<div style="color:#999;padding:8px;">暂无预警 🎉</div>';
+  $('ov-alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert ${a.lv}"><span class="tag">${a.tag}</span><span>${a.html}</span></div>`).join(''):'<div style="color:#999;padding:8px;">暂无预警 🎉</div>';
 }
 
 /* ----- 项目维度 ----- */
