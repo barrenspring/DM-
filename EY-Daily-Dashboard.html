@@ -106,13 +106,8 @@ body.print-prep .page{display:block!important;}
     <button id="exportBtn" class="ghost" style="display:none;">⬇ 更新共享数据</button>
     <button id="pickBtn">选择 Excel 文件</button>
     <button id="pdfBtn" class="ghost">导出 PDF</button>
-    <button id="demoBtn" class="ghost">▶ 演示</button>
   </div>
 </header>
-<div id="demoBadge" style="display:none;position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(46,46,56,.92);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;box-shadow:0 2px 10px rgba(0,0,0,.25);">
-  <span id="demoText">演示模式</span> · 按 Esc 退出
-  <span style="display:inline-block;width:140px;height:5px;background:#555;border-radius:3px;margin-left:10px;vertical-align:middle;overflow:hidden;"><span id="demoBar" style="display:block;height:100%;width:0;background:var(--ey-yellow);"></span></span>
-</div>
 <div class="banner" id="banner"></div>
 <input type="file" id="legacyInput" accept=".xlsx,.xlsm,.xls" style="display:none">
 
@@ -358,53 +353,6 @@ function exportAllPDF(){
     renderCharts(currentTab);
   },400);
 }
-/* ===== 演示模式：自动巡览 5 个维度，约 20s，便于录屏 ===== */
-$('demoBtn').onclick=()=>{ if(window.__demoRunning)stopDemo(); else startDemo(); };
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&window.__demoRunning)stopDemo(); });
-const DEMO_STEPS=[
-  {tab:'overview',label:'全览 · 项目交付与预算总览',ms:5000},
-  {tab:'project', label:'底稿进度 · 各项目与复核情况',ms:4500},
-  {tab:'conf',    label:'函证进度 · 电子函证占比与收回',ms:4000},
-  {tab:'os',      label:'OS 进度 · 内/外部卡点跟踪',ms:3500},
-  {tab:'staff',   label:'员工维度 · 底稿分工与完成',ms:3500},
-];
-let _demoTimers=[];
-function startDemo(){
-  if(!DATA){banner('warn','请先载入数据再演示。');return;}
-  window.__demoRunning=true;
-  $('demoBtn').textContent='■ 停止';
-  $('demoBadge').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
-  const total=DEMO_STEPS.reduce((s,x)=>s+x.ms,0);
-  let acc=0;
-  // 进度条
-  const t0=Date.now();
-  const barTimer=setInterval(()=>{const p=Math.min(100,(Date.now()-t0)/total*100);$('demoBar').style.width=p+'%';if(p>=100)clearInterval(barTimer);},80);
-  _demoTimers.push({clear:()=>clearInterval(barTimer)});
-  DEMO_STEPS.forEach((step,i)=>{
-    const at=acc; acc+=step.ms;
-    const id=setTimeout(()=>{
-      showTab(step.tab);
-      $('demoText').textContent=step.label;
-      // 巡览中缓慢下滚再回顶，展示图表+表格
-      window.scrollTo({top:0,behavior:'smooth'});
-      const downAt=setTimeout(()=>{const h=document.documentElement.scrollHeight-window.innerHeight;window.scrollTo({top:Math.max(0,h*0.55),behavior:'smooth'});},step.ms*0.45);
-      const upAt=setTimeout(()=>{window.scrollTo({top:0,behavior:'smooth'});},step.ms*0.82);
-      _demoTimers.push({clear:()=>{clearTimeout(downAt);clearTimeout(upAt);}});
-    },at);
-    _demoTimers.push({clear:()=>clearTimeout(id)});
-  });
-  const endId=setTimeout(()=>stopDemo(),total+300);
-  _demoTimers.push({clear:()=>clearTimeout(endId)});
-}
-function stopDemo(){
-  window.__demoRunning=false;
-  _demoTimers.forEach(t=>t.clear());_demoTimers=[];
-  $('demoBtn').textContent='▶ 演示';
-  $('demoBadge').style.display='none';
-  $('demoBar').style.width='0';
-}
-
 $('legacyInput').onchange=async()=>{const f=$('legacyInput').files[0];if(!f)return;try{parse(await f.arrayBuffer());mark();after();}catch(e){banner('err','❌ 读取失败：'+e.message);}};
 async function pickFile(){
   hideBanner(); if(typeof XLSX==='undefined'){banner('err','❌ Excel解析库未加载，无法读取。');return;}
