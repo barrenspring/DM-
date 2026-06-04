@@ -93,7 +93,7 @@ body.print-prep .page{display:block!important;}
 <body>
 <header>
   <span class="logo">EY</span>
-  <div><h1>Daily Management 看板</h1><div class="sub">底稿交付中心 · 进度 / 函证 / OS / 预算管控</div></div>
+  <div><h1>Daily Management 看板</h1><div class="sub">CSDC · 底稿 / 函证 / OS / 预算管控</div></div>
   <div class="toolbar">
     <span id="lastUpdate" style="color:#bdbdc7"></span>
     <button id="exportBtn" class="ghost" style="display:none;">⬇ 更新共享数据</button>
@@ -226,33 +226,48 @@ window.addEventListener('load',()=>{
 /* 自定义插件：在柱/饼上显示数值与占比 */
 const valueLabelPlugin={
   id:'valueLabel',
-  afterDatasetsDraw(chart,args,opts){
+  afterDatasetsDraw(chart){
+    const cfg=chart.$labels||{};               // 每图标签配置
     const ctx=chart.ctx;
     const type=chart.config.type;
     if(type==='doughnut'||type==='pie'){
-      const ds=chart.data.datasets[0];if(!ds)return;
-      const total=ds.data.reduce((a,b)=>a+(+b||0),0);if(!total)return;
-      const meta=chart.getDatasetMeta(0);
-      ctx.save();ctx.font='bold 12px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-      meta.data.forEach((arc,i)=>{const v=+ds.data[i]||0;if(v<=0)return;
-        const pct=Math.round(v/total*100);if(pct<5)return;
-        const pos=arc.tooltipPosition();
-        ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=3;
-        const txt=v+' ('+pct+'%)';
-        ctx.strokeText(txt,pos.x,pos.y);ctx.fillText(txt,pos.x,pos.y);
+      // 多环：默认仅最内圈(最后一个 dataset)放小字；可被 cfg.ringLabel 控制
+      const dsList=chart.data.datasets;
+      dsList.forEach((ds,di)=>{
+        if(cfg.ringLabel && !cfg.ringLabel.includes(di))return;   // 指定了哪些圈放标签
+        if(!cfg.ringLabel && di!==0)return;                        // 默认只给第0个(单环)放
+        const total=ds.data.reduce((a,b)=>a+(+b||0),0);if(!total)return;
+        const meta=chart.getDatasetMeta(di);
+        const fs=cfg.pieFont||11;
+        ctx.save();ctx.font=fs+'px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+        meta.data.forEach((arc,i)=>{const v=+ds.data[i]||0;if(v<=0)return;
+          const pct=Math.round(v/total*100);if(pct<6)return;
+          const pos=arc.tooltipPosition();
+          ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=2.5;
+          const txt=v+' / '+pct+'%';
+          ctx.strokeText(txt,pos.x,pos.y);ctx.fillStyle='#fff';ctx.fillText(txt,pos.x,pos.y);
+        });
+        ctx.restore();
       });
-      ctx.restore();return;
+      return;
     }
-    // bar：在每段上显示数值；末段额外显示该行合计的百分比（仅堆叠百分比型不适用，这里只标数值）
+    // bar：把数值标在柱的“末端外侧”，不压在图上
     const horizontal=chart.options.indexAxis==='y';
-    ctx.save();ctx.font='11px "Microsoft YaHei",sans-serif';ctx.fillStyle='#333';
-    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.save();ctx.font='11px "Microsoft YaHei",sans-serif';ctx.fillStyle='#555';
+    const stacked=chart.options.scales&&chart.options.scales.x&&chart.options.scales.x.stacked;
     chart.data.datasets.forEach((ds,di)=>{
       const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
       meta.data.forEach((el,i)=>{const v=+ds.data[i]||0;if(!v)return;
-        const p=el.tooltipPosition();
-        if(horizontal){ctx.textAlign='center';ctx.fillText(v,p.x,p.y);}
-        else{ctx.textAlign='center';ctx.fillText(v,p.x,p.y);}
+        if(stacked){ // 堆叠：标在每段中间（段内），用深色小字
+          const p=el.tooltipPosition();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(v,p.x,p.y);
+        }else if(horizontal){ // 非堆叠横向：标在柱右侧外
+          ctx.fillStyle='#555';ctx.textAlign='left';ctx.textBaseline='middle';
+          ctx.fillText(v,el.x+5,el.y);
+        }else{ // 非堆叠纵向：标在柱顶上方
+          ctx.fillStyle='#555';ctx.textAlign='center';ctx.textBaseline='bottom';
+          ctx.fillText(v,el.x,el.y-3);
+        }
       });
     });
     ctx.restore();
@@ -690,7 +705,7 @@ function renderCharts(tab){
     bar('c-budget',{labels:bp.map(p=>p.name),datasets:[
       {label:'预算',data:bp.map(p=>p.budget),backgroundColor:'#cfcfd6'},
       {label:'实际',data:bp.map(p=>p.actual),backgroundColor:bp.map(p=>p.actual>p.budget?'#e0383e':'#2db84d')}]},
-      {indexAxis:'y'});
+      {indexAxis:'y',maxBarThickness:22,categoryPercentage:0.85,barPercentage:0.95});
   }else if(tab==='project'){drawProjectCharts();}
   else if(tab==='staff'){
     const sel=$('sf-name').value;let S=DATA.staff.slice().sort((a,b)=>b.wp-a.wp);if(sel)S=S.filter(s=>s.owner===sel);
@@ -706,22 +721,27 @@ function renderCharts(tab){
 /* ===== Chart 封装：固定容器高度 + 关闭动画 + 限制柱宽 ===== */
 function destroy(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,resizeDelay:120,plugins:{legend:{position:'bottom'}}};
-function bar(id,data,opts){destroy(id);
-  (data.datasets||[]).forEach(ds=>{if(ds.maxBarThickness==null)ds.maxBarThickness=40;});
-  charts[id]=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.7,barPercentage:0.85},baseOpts,opts)});}
-function pie(id,labels,data,colors){destroy(id);charts[id]=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});}
+function bar(id,data,opts,labelCfg){destroy(id);
+  const maxbt=(opts&&opts.maxBarThickness)||40;
+  (data.datasets||[]).forEach(ds=>{if(ds.maxBarThickness==null)ds.maxBarThickness=maxbt;});
+  if(opts)delete opts.maxBarThickness;
+  const c=new Chart($(id),{type:'bar',data,options:Object.assign({categoryPercentage:0.8,barPercentage:0.9},baseOpts,opts)});
+  c.$labels=labelCfg||{};charts[id]=c;}
+function pie(id,labels,data,colors,labelCfg){destroy(id);
+  const c=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});
+  c.$labels=labelCfg||{};charts[id]=c;}
 function doubleDonut(id,inner,outer){destroy(id);
-  charts[id]=new Chart($(id),{type:'doughnut',
+  const c=new Chart($(id),{type:'doughnut',
     data:{labels:outer.labels,datasets:[
       {label:'明细',data:outer.data,backgroundColor:outer.colors,weight:1},
-      {label:'汇总',data:inner.data,backgroundColor:inner.colors,weight:0.6,
-       // 用第二个 dataset 自带的 labels 供图例/提示
-       _labels:inner.labels}
+      {label:'汇总',data:inner.data,backgroundColor:inner.colors,weight:0.55,_labels:inner.labels}
     ]},
-    options:Object.assign({},baseOpts,{cutout:'30%',
+    options:Object.assign({},baseOpts,{cutout:'28%',
       plugins:{legend:{position:'bottom'},
-        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} (${Math.round(c.parsed/tot*100)}%)`;}}}}})});
-}
+        tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
+  // 外圈(dataset 0)不放数字，仅内圈(dataset 1)放小字
+  c.$labels={ringLabel:[1],pieFont:10};
+  charts[id]=c;}
 </script>
 </body>
 </html>
