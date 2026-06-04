@@ -238,16 +238,16 @@ const valueLabelPlugin={
         else if(di!==0)return;                                        // 默认只给第0个(单环)放
         const total=ds.data.reduce((a,b)=>a+(+b||0),0);if(!total)return;
         const meta=chart.getDatasetMeta(di);
-        const fs=cfg.pieFont||12;
+        const fs=cfg.pieFont||10;
         ctx.save();ctx.font='bold '+fs+'px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
         meta.data.forEach((arc,i)=>{const v=+ds.data[i]||0;if(v<=0)return;
           const pct=Math.round(v/total*100);if(pct<6)return;
           const pos=arc.tooltipPosition();
           const txt=cfg.valueOnly?(v+''):(v+' / '+pct+'%');
-          // 白色描边 + 深色字，任何底色都清晰
-          ctx.lineWidth=3;ctx.strokeStyle='rgba(255,255,255,.9)';
+          // 白色字 + 浅描边，字号小、不刺眼
+          ctx.lineWidth=2;ctx.strokeStyle='rgba(0,0,0,.25)';
           ctx.strokeText(txt,pos.x,pos.y);
-          ctx.fillStyle='#2e2e38';ctx.fillText(txt,pos.x,pos.y);
+          ctx.fillStyle='#ffffff';ctx.fillText(txt,pos.x,pos.y);
         });
         ctx.restore();
       });
@@ -747,16 +747,20 @@ function pie(id,labels,data,colors,labelCfg){destroy(id);
   const c=new Chart($(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:baseOpts});
   c.$labels=labelCfg||{};charts[id]=c;}
 function doubleDonut(id,inner,outer){destroy(id);
+  // Chart.js 中 dataset[0] 为最内圈：内圈=汇总(电子/纸质)，外圈=明细类型
+  // 图例展示明细类型(外圈)，更有信息量
   const c=new Chart($(id),{type:'doughnut',
     data:{labels:outer.labels,datasets:[
-      {label:'明细',data:outer.data,backgroundColor:outer.colors,weight:1},
-      {label:'汇总',data:inner.data,backgroundColor:inner.colors,weight:0.55,_labels:inner.labels}
+      {label:'汇总',data:inner.data,backgroundColor:inner.colors,weight:0.55,_labels:inner.labels},
+      {label:'明细',data:outer.data,backgroundColor:outer.colors,weight:1,_labels:outer.labels}
     ]},
     options:Object.assign({},baseOpts,{cutout:'28%',
-      plugins:{legend:{position:'bottom'},
+      plugins:{legend:{position:'bottom',labels:{generateLabels:ch=>{
+        const ds=ch.data.datasets[1];return outer.labels.map((lb,i)=>({text:lb,fillStyle:outer.colors[i],strokeStyle:outer.colors[i],index:i}));
+      }}},
         tooltip:{callbacks:{label:c=>{const ds=c.dataset;const lab=ds._labels?ds._labels[c.dataIndex]:c.label;const tot=ds.data.reduce((a,b)=>a+(+b||0),0);return `${lab}: ${c.parsed} / ${Math.round(c.parsed/tot*100)}%`;}}}}})});
-  // 外圈(dataset 0)不放数字，仅内圈(dataset 1)放小字
-  c.$labels={ringLabel:[1],pieFont:11,valueOnly:false};
+  // 仅内圈(dataset 0=汇总)放小字，外圈(明细)不放数字
+  c.$labels={ringLabel:[0],pieFont:10,valueOnly:false};
   charts[id]=c;}
 </script>
 </body>
